@@ -1,9 +1,20 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LuLayoutDashboard, LuUser, LuSettings } from 'react-icons/lu'
-import { MdFavorite } from 'react-icons/md'
+import {
+  LuLayoutDashboard,
+  LuClipboardList,
+  LuHistory,
+  LuLightbulb,
+  LuTrendingUp,
+  LuUser,
+  LuSettings,
+  LuBrainCircuit,
+} from 'react-icons/lu'
 
 const navItems = [
   { to: '/dashboard', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/input-harian', icon: <LuClipboardList size={18} />, label: 'Input Harian' },
+  { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
+  { to: '/analytics', icon: <LuTrendingUp size={18} />, label: 'Insight & Tren' },
   { to: '/profile', icon: <LuUser size={18} />, label: 'Profile' },
   { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
 ]
@@ -16,11 +27,11 @@ function Sidebar() {
       {/* Logo */}
       <div className='flex items-center gap-3 px-2 mb-10'>
         <div className='w-10 h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-md shadow-teal-100'>
-          <MdFavorite size={20} className='text-white' />
+          <LuBrainCircuit size={20} className='text-white' />
         </div>
         <div>
-          <h1 className='text-base font-bold text-slate-800 leading-none'>HealthTrack</h1>
-          <p className='text-xs text-slate-400 mt-0.5'>AI Wellness Monitor</p>
+          <h1 className='text-base font-bold text-slate-800 leading-none'>StressTracker</h1>
+          <p className='text-xs text-teal-500 mt-0.5 font-medium'>AI Wellness Monitor</p>
         </div>
       </div>
 

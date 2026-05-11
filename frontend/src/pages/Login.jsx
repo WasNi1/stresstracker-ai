@@ -22,7 +22,7 @@ function Login() {
           <div className='w-10 h-10 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center'>
             <LuHeart size={20} className='text-white' />
           </div>
-          <span className='text-white font-bold text-xl'>HealthTrack AI</span>
+          <span className='text-white font-bold text-xl'>StressTracker AI</span>
         </div>
 
         <div className='relative z-10'>
@@ -45,7 +45,7 @@ function Login() {
           </div>
         </div>
 
-        <p className='relative z-10 text-teal-100 text-sm'>© 2025 HealthTrack AI. All rights reserved.</p>
+        <p className='relative z-10 text-teal-100 text-sm'>© 2025 StressTracker AI. All rights reserved.</p>
       </div>
 
       {/* Right Panel */}
@@ -54,11 +54,11 @@ function Login() {
           <div className='bg-white/70 backdrop-blur-xl border border-white/80 shadow-xl shadow-teal-100/50 rounded-[32px] p-10'>
             <div className='lg:hidden flex items-center gap-2 mb-8'>
               <LuHeart size={22} className='text-teal-500' />
-              <span className='text-teal-600 font-bold text-xl'>HealthTrack AI</span>
+              <span className='text-teal-600 font-bold text-xl'>StressTracker AI</span>
             </div>
 
             <h1 className='text-3xl font-bold text-slate-800'>Selamat datang</h1>
-            <p className='text-slate-400 mt-2 text-sm'>Masuk untuk melanjutkan sesi kesehatanmu</p>
+            <p className='text-slate-400 mt-2 text-sm'>Masuk untuk melanjutkan sesi stress trackermu</p>
 
             <form className='mt-8 flex flex-col gap-4'>
               <div className='flex flex-col gap-1.5'>
