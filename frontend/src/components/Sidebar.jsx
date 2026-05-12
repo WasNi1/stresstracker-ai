@@ -11,12 +11,12 @@ import {
 } from 'react-icons/lu'
 
 const navItems = [
-  { to: '/dashboard', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
   { to: '/input-harian', icon: <LuClipboardList size={18} />, label: 'Input Harian' },
-  { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
-  { to: '/analytics', icon: <LuTrendingUp size={18} />, label: 'Insight & Tren' },
-  { to: '/profile', icon: <LuUser size={18} />, label: 'Profile' },
-  { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
+  // { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
+  // { to: '/analytics', icon: <LuTrendingUp size={18} />, label: 'Insight & Tren' },
+  // { to: '/profile', icon: <LuUser size={18} />, label: 'Profile' },
+  // { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
 ]
 
 function Sidebar() {

@@ -11,14 +11,13 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
         <Route path='/' element={<Dashboard />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/login' element={<Login />} />
         <Route path='/input-harian' element={<DailyInput />} />
-        {/* <Route path='/input-harian' element={<Dashboard />} />
-        <Route path='/riwayat' element={<Dashboard />} /> */}
-        {/* <Route path='/analytics' element={<Analytics />} /> */}
-        {/* <Route path='/profile' element={<Profile />} />
+        {/* <Route path='/riwayat' element={<Dashboard />} />
+        <Route path='/analytics' element={<Analytics />} />
+        <Route path='/profile' element={<Profile />} />
         <Route path='/settings' element={<Settings />} /> */}
       </Routes>
     </BrowserRouter>

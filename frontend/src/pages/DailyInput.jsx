@@ -5,10 +5,11 @@ import {
   LuChevronLeft,
   LuChevronRight,
 } from 'react-icons/lu'
+import MainLayout from '../layouts/MainLayout'
 
 function DailyInput() {
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 to-teal-50/40 py-10 px-4'>
+    <MainLayout title='Input Harian'>
       <div className='max-w-3xl mx-auto'>
         {/* Header */}
         <div className='mb-8'>
@@ -209,7 +210,7 @@ function DailyInput() {
           </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   )
 }
 
