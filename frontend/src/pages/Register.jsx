@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {  Link } from "react-router-dom";
 import {
   LuHeart,
@@ -12,7 +13,37 @@ import {
   LuWeight,
   LuBriefcase,
   LuCalendar,
+  LuCircleCheck,
+  LuCircleX,
 } from 'react-icons/lu'
+import { FcGoogle } from 'react-icons/fc'
+
+function PasswordStrength({ password }) {
+  const rules = [
+    { label: 'Minimal 8 karakter', valid: password.length >= 8 },
+    { label: 'Mengandung huruf kapital', valid: /[A-Z]/.test(password) },
+    { label: 'Mengandung angka', valid: /[0-9]/.test(password) },
+  ]
+  if (!password) return null
+  return (
+    <div className='flex flex-col gap-1.5 mt-2'>
+      {rules.map((r) => (
+        <div key={r.label} className='flex items-center gap-2'>
+          {r.valid
+            ? <LuCircleCheck size={13} className='text-teal-500 shrink-0' />
+            : <LuCircleX size={13} className='text-red-400 shrink-0' />
+          }
+          <span className={`text-xs ${r.valid ? 'text-teal-500' : 'text-red-400'}`}>{r.label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function isPasswordValid(password) {
+  return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)
+}
+
 
 const features = [
   { icon: <LuBrain size={16} className='text-white' />, label: 'AI Stress Detection' },
@@ -21,6 +52,15 @@ const features = [
 ]
 
 function Register () {
+  const [password, setPassword] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSubmitted(true)
+    if (!isPasswordValid(password)) return
+    // lanjut proses register
+  }
     return (
         <div className='min-h-screen flex'>
       {/* Left Panel */}
@@ -84,7 +124,7 @@ function Register () {
               Data hanya diisi sekali untuk personalisasi AI
             </p>
 
-            <form className='mt-8 flex flex-col gap-5'>
+            <form className='mt-8 flex flex-col gap-5' onSubmit={handleSubmit}>
               {/* Nama & Email */}
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='flex flex-col gap-1.5'>
@@ -227,19 +267,20 @@ function Register () {
 
               {/* Password */}
               <div className='flex flex-col gap-1.5'>
-                <label className='text-sm font-medium text-slate-600'>
-                  Password
-                </label>
-
-                <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
+                <label className='text-sm font-medium text-slate-600'>Password</label>
+                <div className={`flex items-center gap-2 bg-slate-50 border focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all ${
+                  submitted && !isPasswordValid(password) ? 'border-red-300' : 'border-slate-200 focus-within:border-teal-400'
+                }`}>
                   <LuLock size={16} className='text-slate-300 shrink-0' />
-
                   <input
                     type='password'
                     placeholder='Min. 8 karakter'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
                   />
                 </div>
+                <PasswordStrength password={password} />
               </div>
 
               <button
@@ -248,6 +289,20 @@ function Register () {
               >
                 Buat akun & mulai
                 <LuArrowRight size={16} />
+              </button>
+
+              <div className='flex items-center gap-3 my-1'>
+                <div className='flex-1 h-px bg-slate-100'></div>
+                <span className='text-xs text-slate-300'>atau</span>
+                <div className='flex-1 h-px bg-slate-100'></div>
+              </div>
+
+              <button
+                type='button'
+                className='flex items-center justify-center gap-3 w-full border border-slate-200 bg-white hover:bg-slate-50 py-3.5 rounded-2xl font-medium text-slate-600 text-sm transition-all active:scale-[0.98] shadow-sm'
+              >
+                <FcGoogle size={20} />
+                Daftar dengan Google
               </button>
             </form>
 
