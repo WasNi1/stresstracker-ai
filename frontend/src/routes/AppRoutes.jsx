@@ -10,9 +10,9 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path='/' element={<Dashboard />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
-        <Route path='/' element={<Dashboard />} />
         <Route path='/input-harian' element={<DailyInput />} />
         <Route path='/riwayat' element={<Riwayat />} />
         <Route path='/trend-insight' element={<TrendInsight />} />
