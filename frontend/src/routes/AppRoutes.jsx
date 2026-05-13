@@ -5,6 +5,7 @@ import Dashboard from '../pages/Dashboard'
 import DailyInput from '../pages/DailyInput'
 import Riwayat from '../pages/Riwayat'
 import TrendInsight from '../pages/Trend-Insight'
+import Profile from '../pages/Profile'
 
 function AppRoutes() {
   return (
@@ -16,6 +17,7 @@ function AppRoutes() {
         <Route path='/input-harian' element={<DailyInput />} />
         <Route path='/riwayat' element={<Riwayat />} />
         <Route path='/trend-insight' element={<TrendInsight />} />
+        <Route path='/profile' element={<Profile />} />
       </Routes>
     </BrowserRouter>
   )
