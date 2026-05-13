@@ -16,7 +16,7 @@ const navItems = [
   { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
   { to: '/trend-insight', icon: <LuTrendingUp size={18} />, label: 'Insight & Tren' },
   { to: '/profile', icon: <LuUser size={18} />, label: 'Profile' },
-  // { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
+  { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
 ]
 
 function Sidebar() {
