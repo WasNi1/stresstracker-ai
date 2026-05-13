@@ -10,7 +10,7 @@ const data = [
   { day: 'Min', value: 70, height: 140 },
 ]
 
-function HealthChart() {
+function HealthChart({ empty = false }) {
   return (
     <div className='bg-white rounded-3xl border border-slate-100 p-6 shadow-sm'>
       <div className='flex items-center justify-between mb-6'>
@@ -32,18 +32,26 @@ function HealthChart() {
         </div>
       </div>
 
-      <div className='flex items-end gap-3 h-[180px]'>
-        {data.map(({ day, value, height }) => (
-          <div key={day} className='flex-1 flex flex-col items-center gap-2'>
-            <span className='text-xs text-slate-400 font-medium'>{value}</span>
-            <div
-              className='w-full rounded-t-2xl bg-gradient-to-t from-teal-500 to-emerald-400 opacity-80 hover:opacity-100 transition-opacity cursor-pointer'
-              style={{ height: `${height}px` }}
-            ></div>
-            <span className='text-xs text-slate-400'>{day}</span>
-          </div>
-        ))}
-      </div>
+      {empty ? (
+        <div className='h-[180px] flex flex-col items-center justify-center gap-2'>
+          <LuActivity size={32} className='text-slate-200' />
+          <p className='text-sm text-slate-300 font-medium'>Belum ada data</p>
+          <p className='text-xs text-slate-300'>Isi input harian untuk melihat grafik</p>
+        </div>
+      ) : (
+        <div className='flex items-end gap-3 h-[180px]'>
+          {data.map(({ day, value, height }) => (
+            <div key={day} className='flex-1 flex flex-col items-center gap-2'>
+              <span className='text-xs text-slate-400 font-medium'>{value}</span>
+              <div
+                className='w-full rounded-t-2xl bg-gradient-to-t from-teal-500 to-emerald-400 opacity-80 hover:opacity-100 transition-opacity cursor-pointer'
+                style={{ height: `${height}px` }}
+              ></div>
+              <span className='text-xs text-slate-400'>{day}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

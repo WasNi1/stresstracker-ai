@@ -6,7 +6,7 @@ const tips = [
   { icon: <LuFootprints size={16} />, text: 'Jalan kaki 20 menit di pagi hari meningkatkan mood.' },
 ]
 
-function RecommendationCard() {
+function RecommendationCard({ empty = false }) {
   return (
     <div className='bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl p-6 text-white shadow-md shadow-teal-100'>
       <div className='flex items-center gap-2 mb-4'>
@@ -19,18 +19,27 @@ function RecommendationCard() {
         </div>
       </div>
 
-      <p className='text-sm text-teal-50 leading-relaxed mb-5'>
-        Tingkat stres kamu meningkat <span className='font-bold text-white'>12%</span> minggu ini. Berikut saran personal untukmu:
-      </p>
-
-      <div className='flex flex-col gap-3'>
-        {tips.map(({ icon, text }) => (
-          <div key={text} className='flex items-start gap-3 bg-white/10 rounded-2xl p-3'>
-            <span className='mt-0.5 text-white'>{icon}</span>
-            <p className='text-xs text-teal-50 leading-relaxed'>{text}</p>
+      {empty ? (
+        <div className='flex flex-col items-center justify-center py-6 gap-2'>
+          <LuBot size={28} className='text-white/30' />
+          <p className='text-sm text-white/50 font-medium'>Belum ada rekomendasi</p>
+          <p className='text-xs text-white/40 text-center'>Isi input harian untuk mendapatkan saran AI personal</p>
+        </div>
+      ) : (
+        <>
+          <p className='text-sm text-teal-50 leading-relaxed mb-5'>
+            Tingkat stres kamu meningkat <span className='font-bold text-white'>12%</span> minggu ini. Berikut saran personal untukmu:
+          </p>
+          <div className='flex flex-col gap-3'>
+            {tips.map(({ icon, text }) => (
+              <div key={text} className='flex items-start gap-3 bg-white/10 rounded-2xl p-3'>
+                <span className='mt-0.5 text-white'>{icon}</span>
+                <p className='text-xs text-teal-50 leading-relaxed'>{text}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   )
 }

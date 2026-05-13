@@ -8,9 +8,9 @@ const iconMap = {
   water: <LuDroplets size={20} className='text-teal-500' />,
 }
 
-function MetricCard({ title, value, desc, icon = 'brain', trend = 'up' }) {
+function MetricCard({ title, value, desc, icon = 'brain', trend = 'up', empty = false }) {
   return (
-    <div className='bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md hover:shadow-teal-50 transition-all'>
+    <div className={`bg-white rounded-3xl border border-slate-100 p-6 shadow-sm hover:shadow-md hover:shadow-teal-50 transition-all ${empty ? 'opacity-60' : ''}`}>
       <div className='flex items-start justify-between'>
         <div className='w-11 h-11 bg-teal-50 rounded-2xl flex items-center justify-center'>
           {iconMap[icon]}

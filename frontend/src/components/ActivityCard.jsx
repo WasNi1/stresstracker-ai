@@ -10,7 +10,7 @@ const activities = [
   { icon: <FaFire size={18} className='text-teal-500' />, label: 'Kalori', value: '420 kkal', progress: 55, target: '750 kkal' },
 ]
 
-function ActivityCard() {
+function ActivityCard({ empty = false }) {
   return (
     <div className='bg-white rounded-3xl border border-slate-100 p-6 shadow-sm'>
       <div className='flex items-center justify-between mb-5'>
@@ -23,28 +23,36 @@ function ActivityCard() {
         <span className='text-xs text-teal-500 font-semibold bg-teal-50 px-3 py-1 rounded-full'>Hari ini</span>
       </div>
 
-      <div className='flex flex-col gap-4'>
-        {activities.map(({ icon, label, value, progress, target }) => (
-          <div key={label}>
-            <div className='flex items-center justify-between mb-1.5'>
-              <div className='flex items-center gap-2'>
-                {icon}
-                <span className='text-sm font-medium text-slate-600'>{label}</span>
+      {empty ? (
+        <div className='flex flex-col items-center justify-center py-6 gap-2'>
+          <LuSparkles size={28} className='text-slate-200' />
+          <p className='text-sm text-slate-300 font-medium'>Belum ada aktivitas</p>
+          <p className='text-xs text-slate-300 text-center'>Isi input harian untuk mencatat aktivitasmu</p>
+        </div>
+      ) : (
+        <div className='flex flex-col gap-4'>
+          {activities.map(({ icon, label, value, progress, target }) => (
+            <div key={label}>
+              <div className='flex items-center justify-between mb-1.5'>
+                <div className='flex items-center gap-2'>
+                  {icon}
+                  <span className='text-sm font-medium text-slate-600'>{label}</span>
+                </div>
+                <div className='text-right'>
+                  <span className='text-sm font-bold text-slate-800'>{value}</span>
+                  <span className='text-xs text-slate-300 ml-1'>/ {target}</span>
+                </div>
               </div>
-              <div className='text-right'>
-                <span className='text-sm font-bold text-slate-800'>{value}</span>
-                <span className='text-xs text-slate-300 ml-1'>/ {target}</span>
+              <div className='w-full h-2 bg-slate-100 rounded-full'>
+                <div
+                  className='h-2 bg-gradient-to-r from-teal-400 to-emerald-400 rounded-full transition-all'
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
             </div>
-            <div className='w-full h-2 bg-slate-100 rounded-full'>
-              <div
-                className='h-2 bg-gradient-to-r from-teal-400 to-emerald-400 rounded-full transition-all'
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
