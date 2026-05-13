@@ -1,325 +1,602 @@
-import { useState } from 'react'
-import {  Link } from "react-router-dom";
+import { useState, useEffect } from 'react'
 import {
-  LuHeart,
-  LuBrain,
-  LuMoon,
-  LuActivity,
-  LuMail,
-  LuLock,
-  LuArrowRight,
-  LuUser,
-  LuRuler,
-  LuWeight,
-  LuBriefcase,
   LuCalendar,
-  LuCircleCheck,
-  LuCircleX,
+  LuChevronRight,
+  LuChevronDown,
+  LuChevronUp,
+  LuTrendingDown,
+  LuTrendingUp,
+  LuMinus,
+  LuSearch,
+  LuFilter,
+  LuX,
+  LuActivity,
+  LuFire,
 } from 'react-icons/lu'
-import { FcGoogle } from 'react-icons/fc'
+import MainLayout from '../layouts/MainLayout'
+import { getRiwayat, getRiwayatChart } from '../api/riwayat'
 
-function PasswordStrength({ password }) {
-  const rules = [
-    { label: 'Minimal 8 karakter', valid: password.length >= 8 },
-    { label: 'Mengandung huruf kapital', valid: /[A-Z]/.test(password) },
-    { label: 'Mengandung angka', valid: /[0-9]/.test(password) },
-  ]
-  if (!password) return null
+/* ─────────────────────────────────────────────
+   Data dummy riwayat log (fallback)
+───────────────────────────────────────────── */
+
+const riwayatDataDummy = [
+  {
+    id: 1,
+    date: '01 Mei 2026',
+    dateShort: '01/05',
+    dayName: 'Kamis',
+    stress: { level: 2, label: 'Sedang', color: 'amber' },
+    sleep: { level: 3, label: 'Cukup', color: 'blue' },
+    mood: { score: 7, color: 'teal' },
+    details: {
+      tidurJam: 7,
+      kualitasTidur: '😊',
+      anxiety: 2,
+      energi: '⚡',
+      screentime: 5,
+      screenSebelumTidur: 25,
+      bebanKerja: '😐',
+      olahraga: true,
+      jenisOlahraga: 'Lari',
+      kafein: 2,
+      airPutih: 2.5,
+      deadline: false,
+      meditasi: true,
+    },
+    rekomendasi: [
+      '☕ Batasi kafein setelah jam 14.00 untuk jaga kualitas tidur.',
+      '🧘 Pertahankan rutinitas meditasimu — sangat efektif turunkan kecemasan.',
+    ],
+  },
+  {
+    id: 2,
+    date: '30 Apr 2026',
+    dateShort: '30/04',
+    dayName: 'Rabu',
+    stress: { level: 3, label: 'Tinggi', color: 'red' },
+    sleep: { level: 2, label: 'Buruk', color: 'red' },
+    mood: { score: 4, color: 'red' },
+    details: {
+      tidurJam: 4.5,
+      kualitasTidur: '😔',
+      anxiety: 4,
+      energi: '😴',
+      screentime: 9,
+      screenSebelumTidur: 75,
+      bebanKerja: '😓',
+      olahraga: false,
+      jenisOlahraga: null,
+      kafein: 4,
+      airPutih: 1.5,
+      deadline: true,
+      meditasi: false,
+    },
+    rekomendasi: [
+      '📱 Matikan HP minimal 30 menit sebelum tidur. Screen time malammu 75 menit — terlalu tinggi.',
+      '😴 Prioritaskan tidur malam ini minimal 7 jam untuk recovery.',
+      '☕ Kurangi kafein — 4 gelas terlalu banyak dan memperburuk kecemasan.',
+    ],
+  },
+  {
+    id: 3,
+    date: '29 Apr 2026',
+    dateShort: '29/04',
+    dayName: 'Selasa',
+    stress: { level: 2, label: 'Sedang', color: 'amber' },
+    sleep: { level: 3, label: 'Baik', color: 'teal' },
+    mood: { score: 6, color: 'teal' },
+    details: {
+      tidurJam: 7.5,
+      kualitasTidur: '😊',
+      anxiety: 2,
+      energi: '⚡',
+      screentime: 6,
+      screenSebelumTidur: 30,
+      bebanKerja: '😐',
+      olahraga: true,
+      jenisOlahraga: 'Gym',
+      kafein: 2,
+      airPutih: 3,
+      deadline: false,
+      meditasi: false,
+    },
+    rekomendasi: [
+      '🏃 Bagus! Olahraga rutin sangat membantu turunkan stress. Pertahankan.',
+      '💧 Tingkatkan asupan air putih — 3 liter ideal untuk tubuhmu.',
+    ],
+  },
+  {
+    id: 4,
+    date: '28 Apr 2026',
+    dateShort: '28/04',
+    dayName: 'Senin',
+    stress: { level: 1, label: 'Rendah', color: 'teal' },
+    sleep: { level: 4, label: 'Sangat Baik', color: 'teal' },
+    mood: { score: 8, color: 'teal' },
+    details: {
+      tidurJam: 8.5,
+      kualitasTidur: '😄',
+      anxiety: 1,
+      energi: '🔥',
+      screentime: 4,
+      screenSebelumTidur: 10,
+      bebanKerja: '😌',
+      olahraga: true,
+      jenisOlahraga: 'Yoga',
+      kafein: 1,
+      airPutih: 3.5,
+      deadline: false,
+      meditasi: true,
+    },
+    rekomendasi: [
+      '🌟 Hari yang sangat baik! Jadikan ini sebagai baseline harianmu.',
+      '🧘 Meditasi + screen time rendah = kombinasi terbaik. Lanjutkan.',
+    ],
+  },
+  {
+    id: 5,
+    date: '27 Apr 2026',
+    dateShort: '27/04',
+    dayName: 'Minggu',
+    stress: { level: 3, label: 'Tinggi', color: 'red' },
+    sleep: { level: 2, label: 'Buruk', color: 'red' },
+    mood: { score: 3, color: 'red' },
+    details: {
+      tidurJam: 5,
+      kualitasTidur: '😩',
+      anxiety: 4,
+      energi: '🪫',
+      screentime: 10,
+      screenSebelumTidur: 90,
+      bebanKerja: '🤯',
+      olahraga: false,
+      jenisOlahraga: null,
+      kafein: 3,
+      airPutih: 1,
+      deadline: true,
+      meditasi: false,
+    },
+    rekomendasi: [
+      '🚨 Stress sangat tinggi. Pertimbangkan istirahat penuh hari ini.',
+      '📱 Screen time 90 menit sebelum tidur sangat merusak kualitas tidurmu.',
+      '💧 Hanya 1 liter air — dehidrasi memperparah kelelahan dan kecemasan.',
+    ],
+  },
+  {
+    id: 6,
+    date: '26 Apr 2026',
+    dateShort: '26/04',
+    dayName: 'Sabtu',
+    stress: { level: 2, label: 'Sedang', color: 'amber' },
+    sleep: { level: 3, label: 'Cukup', color: 'blue' },
+    mood: { score: 6, color: 'teal' },
+    details: {
+      tidurJam: 7,
+      kualitasTidur: '😐',
+      anxiety: 2,
+      energi: '😐',
+      screentime: 7,
+      screenSebelumTidur: 45,
+      bebanKerja: '🙂',
+      olahraga: true,
+      jenisOlahraga: 'Jalan kaki',
+      kafein: 1,
+      airPutih: 2,
+      deadline: false,
+      meditasi: false,
+    },
+    rekomendasi: [
+      '🚶 Jalan kaki sudah bagus! Coba tambah intensitas untuk hasil optimal.',
+      '📱 Kurangi screen time sebelum tidur ke bawah 30 menit.',
+    ],
+  },
+]
+
+/* ─────────────────────────────────────────────
+   Warna & label helper
+───────────────────────────────────────────── */
+
+const colorMap = {
+  teal:  { tag: 'bg-teal-50 border-teal-200 text-teal-600',    dot: 'bg-teal-400' },
+  amber: { tag: 'bg-amber-50 border-amber-200 text-amber-600', dot: 'bg-amber-400' },
+  red:   { tag: 'bg-red-50 border-red-200 text-red-500',       dot: 'bg-red-400' },
+  blue:  { tag: 'bg-blue-50 border-blue-200 text-blue-500',    dot: 'bg-blue-400' },
+}
+
+function Tag({ color, children }) {
+  const cls = colorMap[color]?.tag ?? colorMap.teal.tag
   return (
-    <div className='flex flex-col gap-1.5 mt-2'>
-      {rules.map((r) => (
-        <div key={r.label} className='flex items-center gap-2'>
-          {r.valid
-            ? <LuCircleCheck size={13} className='text-teal-500 shrink-0' />
-            : <LuCircleX size={13} className='text-red-400 shrink-0' />
-          }
-          <span className={`text-xs ${r.valid ? 'text-teal-500' : 'text-red-400'}`}>{r.label}</span>
+    <span className={`inline-block px-3 py-0.5 rounded-full border text-xs font-medium ${cls}`}>
+      {children}
+    </span>
+  )
+}
+
+function StressDot({ color }) {
+  const cls = colorMap[color]?.dot ?? colorMap.teal.dot
+  return <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${cls}`} />
+}
+
+function MoodTrend({ current, prev }) {
+  if (!prev) return null
+  if (current > prev) return <LuTrendingUp size={13} className='text-teal-400' />
+  if (current < prev) return <LuTrendingDown size={13} className='text-red-400' />
+  return <LuMinus size={13} className='text-slate-500' />
+}
+
+/* ─────────────────────────────────────────────
+   Detail Panel (expand)
+───────────────────────────────────────────── */
+
+function DetailRow({ label, value }) {
+  return (
+    <div className='flex justify-between items-center py-2.5 border-b border-slate-100 last:border-0'>
+      <span className='text-xs text-slate-400'>{label}</span>
+      <span className='text-xs font-mono text-slate-700'>{value}</span>
+    </div>
+  )
+}
+
+function ExpandedDetail({ entry }) {
+  const { details, rekomendasi } = entry
+  return (
+    <div className='mt-4 pt-4 border-t border-slate-100 grid md:grid-cols-2 gap-5'>
+
+      {/* Detail data */}
+      <div className='bg-slate-50 border border-slate-100 rounded-2xl p-4'>
+        <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>DATA HARIAN</div>
+        <DetailRow label='Durasi tidur' value={`${details.tidurJam} jam`} />
+        <DetailRow label='Kualitas tidur' value={details.kualitasTidur} />
+        <DetailRow label='Kecemasan' value={`${details.anxiety} / 5`} />
+        <DetailRow label='Energi' value={details.energi} />
+        <DetailRow label='Screen time' value={`${details.screentime} jam`} />
+        <DetailRow label='HP sebelum tidur' value={`${details.screenSebelumTidur} menit`} />
+        <DetailRow label='Beban kerja' value={details.bebanKerja} />
+        <DetailRow label='Kafein' value={`${details.kafein} gelas`} />
+        <DetailRow label='Air putih' value={`${details.airPutih} liter`} />
+        <DetailRow label='Olahraga' value={details.olahraga ? (details.jenisOlahraga ?? 'Ya') : 'Tidak'} />
+        <DetailRow label='Deadline mendesak' value={details.deadline ? 'Ya' : 'Tidak'} />
+        <DetailRow label='Meditasi' value={details.meditasi ? 'Ya ✓' : 'Tidak'} />
+      </div>
+
+      {/* Rekomendasi AI */}
+      <div>
+        <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>REKOMENDASI AI</div>
+        <div className='flex flex-col gap-2'>
+          {rekomendasi.map((r, i) => (
+            <div
+              key={i}
+              className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed'
+            >
+              {r}
+            </div>
+          ))}
+        </div>
+        <div className='mt-3 text-xs text-slate-400 leading-relaxed px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl'>
+          Rekomendasi ini dibuat oleh AI berdasarkan pola data harianmu. Bukan diagnosis medis.
+        </div>
+      </div>
+
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   History Row
+───────────────────────────────────────────── */
+
+function RiwayatRow({ entry, prevEntry, isExpanded, onToggle }) {
+  return (
+    <div
+      className={`rounded-2xl border transition-all duration-200 ${
+        isExpanded
+          ? 'bg-teal-50/60 border-teal-200'
+          : 'bg-white border-slate-100 hover:border-teal-200 hover:shadow-sm'
+      }`}
+    >
+      {/* Row header */}
+      <button
+        onClick={onToggle}
+        className='w-full flex items-center gap-3 px-5 py-4 text-left'
+      >
+        {/* Dot */}
+        <StressDot color={entry.stress.color} />
+
+        {/* Date */}
+        <div className='flex flex-col min-w-[90px]'>
+          <span className='text-xs font-mono text-slate-600'>{entry.date}</span>
+          <span className='text-[11px] text-slate-400 mt-0.5'>{entry.dayName}</span>
+        </div>
+
+        {/* Tags */}
+        <div className='hidden sm:flex flex-wrap gap-2 flex-1'>
+          <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
+          <Tag color={entry.sleep.color}>Tidur: {entry.sleep.label}</Tag>
+          <Tag color={entry.mood.color}>Mood: {entry.mood.score}/10</Tag>
+        </div>
+        {/* Tags mobile */}
+        <div className='flex sm:hidden flex-col gap-1 flex-1'>
+          <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
+        </div>
+
+        {/* Mood trend vs previous */}
+        <div className='flex items-center gap-1.5'>
+          <MoodTrend current={entry.mood.score} prev={prevEntry?.mood.score} />
+        </div>
+
+        {/* Expand icon */}
+        <div className={`text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-0' : ''}`}>
+          {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
+        </div>
+      </button>
+
+      {/* Expanded detail */}
+      {isExpanded && (
+        <div className='px-5 pb-5'>
+          <ExpandedDetail entry={entry} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   Stat Card Component
+───────────────────────────────────────────── */
+
+function StatCard({ label, value, sub, color = 'slate' }) {
+  const valColor = {
+    teal: 'text-teal-500',
+    amber: 'text-amber-500',
+    red: 'text-red-500',
+    slate: 'text-slate-700',
+  }[color]
+
+  return (
+    <div className='bg-white border border-slate-100 rounded-2xl p-5 text-center shadow-sm'>
+      <div className='text-[10px] font-mono text-slate-400 tracking-widest mb-2'>{label}</div>
+      <div className={`text-3xl font-bold leading-none mb-1.5 ${valColor}`}>{value}</div>
+      {sub && <div className='text-xs text-slate-400'>{sub}</div>}
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   Mini Bar Chart Component
+───────────────────────────────────────────── */
+
+function MiniBarChart({ data, empty = false }) {
+  if (empty || !data || data.length === 0) {
+    return (
+      <div className='h-40 flex flex-col items-center justify-center gap-2'>
+        <LuActivity size={32} className='text-slate-200' />
+        <p className='text-sm text-slate-300 font-medium'>Belum ada data</p>
+      </div>
+    )
+  }
+
+  const max = 4
+  const barColor = (level) => {
+    if (level >= 3) return 'bg-red-400/70'
+    if (level === 2) return 'bg-amber-400/70'
+    return 'bg-teal-400/70'
+  }
+
+  return (
+    <div className='flex items-end gap-1.5 h-40 mt-3'>
+      {data.map((d, i) => (
+        <div key={i} className='flex flex-col items-center gap-1 flex-1'>
+          <div
+            className={`w-full rounded-t-md transition-all ${barColor(d.level)}`}
+            style={{ height: `${(d.level / max) * 100}%`, minHeight: 4 }}
+          />
+          <span className='text-[9px] font-mono text-slate-600'>{d.dateShort.slice(0, 2)}</span>
         </div>
       ))}
     </div>
   )
 }
 
-function isPasswordValid(password) {
-  return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)
+/* ─────────────────────────────────────────────
+   Custom hook untuk fetch riwayat data
+───────────────────────────────────────────── */
+
+function useRiwayatData() {
+  const [data, setData] = useState(undefined)
+  const [chartData, setChartData] = useState(undefined)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const fetchData = () => {
+    setLoading(true)
+    setError(null)
+    
+    // TODO: uncomment ketika backend sudah siap
+    // getRiwayat({ limit: 30 })
+    //   .then((res) => setData(res.data.data))
+    //   .catch((err) => {
+    //     setError(err.message)
+    //     setData(null)
+    //   })
+    //   .finally(() => setLoading(false))
+    
+    // Simulasi sementara — hapus setTimeout ini ketika backend sudah siap
+    setTimeout(() => {
+      setData(null)
+      setChartData(null)
+      setLoading(false)
+    }, 1500)
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  return { data, chartData, loading, error, refetch: fetchData }
 }
 
+/* ─────────────────────────────────────────────
+   Filter Chip Component
+───────────────────────────────────────────── */
 
-const features = [
-  { icon: <LuBrain size={16} className='text-white' />, label: 'AI Stress Detection' },
-  { icon: <LuMoon size={16} className='text-white' />, label: 'Sleep Quality Monitor' },
-  { icon: <LuActivity size={16} className='text-white' />, label: 'Daily Wellness Tracker' },
-]
+function FilterChip({ label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+        active
+          ? 'bg-teal-500 border-teal-500 text-white shadow-sm'
+          : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
+      }`}
+    >
+      {label}
+    </button>
+  )
+}
 
-function Register () {
-  const [password, setPassword] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+/* ─────────────────────────────────────────────
+   Main Component
+───────────────────────────────────────────── */
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setSubmitted(true)
-    if (!isPasswordValid(password)) return
-    // lanjut proses register
-  }
-    return (
-        <div className='min-h-screen flex'>
-      {/* Left Panel */}
-      <div className='hidden lg:flex w-1/2 bg-gradient-to-br from-teal-400 via-emerald-400 to-teal-600 flex-col justify-between p-12 relative overflow-hidden'>
-        <div className='absolute inset-0 opacity-10'>
-          <div className='absolute top-20 left-20 w-64 h-64 rounded-full bg-white'></div>
-          <div className='absolute bottom-20 right-10 w-96 h-96 rounded-full bg-white'></div>
-          <div className='absolute top-1/2 left-1/3 w-32 h-32 rounded-full bg-white'></div>
+export default function RiwayatPage() {
+  const { data, chartData: apiChartData, loading } = useRiwayatData()
+  const [expandedId, setExpandedId] = useState(null)
+  const [search, setSearch] = useState('')
+  const [filterStress, setFilterStress] = useState('Semua')
+
+  const stressFilters = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
+
+  // Gunakan data dari API jika ada, jika tidak gunakan dummy
+  const riwayatData = data?.entries || riwayatDataDummy
+  const stats = data?.stats
+
+  const filtered = riwayatData.filter((e) => {
+    const matchSearch =
+      e.date.toLowerCase().includes(search.toLowerCase()) ||
+      e.dayName.toLowerCase().includes(search.toLowerCase())
+    const matchFilter = filterStress === 'Semua' || e.stress.label === filterStress
+    return matchSearch && matchFilter
+  })
+
+  const avgStress = stats?.avgStress ?? (
+    riwayatData.reduce((s, e) => s + e.stress.level, 0) / riwayatData.length
+  ).toFixed(1)
+
+  const totalLog = stats?.totalLog ?? riwayatData.length
+  const streak = stats?.streak ?? '-'
+  const logWeek = stats?.logWeek ?? '-'
+
+  const chartData = apiChartData || (
+    [...riwayatData]
+      .reverse()
+      .slice(-7)
+      .map((e) => ({ level: e.stress.level, dateShort: e.dateShort }))
+  )
+
+  return (
+    <MainLayout title='Riwayat Log'>
+      <div className='max-w-3xl mx-auto px-0 md:px-0'>
+
+        {/* ── Stats row ── */}
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
+          <StatCard label='TOTAL LOG' value={totalLog} sub='Sejak bergabung' color='slate' />
+          <StatCard label='RATA-RATA STRESS' value={avgStress} sub='Level (PSS-based)' color='amber' />
+          <StatCard label='STREAK' value={streak} sub='Hari berturut-turut 🔥' color='teal' />
+          <StatCard label='LOG MINGGU INI' value={logWeek} sub='Hari tercatat' color='slate' />
         </div>
 
-        <div className='relative z-10 flex items-center gap-3'>
-          <div className='w-10 h-10 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center'>
-            <LuHeart size={20} className='text-white' />
+        {/* ── Trend mini chart ── */}
+        <div className='bg-white border border-slate-100 rounded-3xl p-5 mb-6 shadow-sm'>
+          <div className='flex items-center justify-between mb-1'>
+            <div className='text-sm font-semibold text-slate-700'>Tren Stress 7 Hari Terakhir</div>
+            <span className='text-[11px] font-mono text-teal-500 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full'>
+              Skala PSS 1–4
+            </span>
           </div>
-          <span className='text-white font-bold text-xl'>StressTracker AI</span>
-        </div>
-
-        <div className='relative z-10'>
-          <h2 className='text-4xl font-bold text-white leading-tight'>
-            Mulai perjalanan<br />mental wellnessmu
-          </h2>
-
-          <p className='text-teal-100 mt-4 text-lg leading-relaxed'>
-            Buat akun dan dapatkan insight personal mengenai stress, tidur,
-            dan kesehatan mentalmu setiap hari.
-          </p>
-
-          <div className='mt-10 flex flex-col gap-4'>
-            {features.map(({ icon, label }) => (
-              <div key={label} className='flex items-center gap-3'>
-                <div className='w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center'>
-                  {icon}
-                </div>
-                <span className='text-white font-medium'>{label}</span>
+          <div className='text-xs text-slate-400 mb-1'>Level stress harian</div>
+          <MiniBarChart data={chartData} empty={!data} />
+          <div className='flex gap-3 mt-3 flex-wrap'>
+            {[
+              { label: 'Rendah', cls: 'bg-teal-400' },
+              { label: 'Sedang', cls: 'bg-amber-400' },
+              { label: 'Tinggi', cls: 'bg-red-400' },
+            ].map((l) => (
+              <div key={l.label} className='flex items-center gap-1.5'>
+                <span className={`w-2.5 h-2.5 rounded-sm ${l.cls}`} />
+                <span className='text-[11px] text-slate-500'>{l.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className='relative z-10 text-teal-100 text-sm'>
-          © 2025 StressTracker AI. All rights reserved.
-        </p>
-      </div>
+        {/* ── List header ── */}
+        <div className='bg-white/80 backdrop-blur border border-slate-100 shadow-xl shadow-teal-50 rounded-3xl p-6 md:p-7'>
 
-      {/* Right Panel */}
-      <div className='flex-1 bg-gradient-to-br from-slate-50 to-teal-50/40 flex items-center justify-center p-8 overflow-y-auto'>
-        <div className='w-full max-w-2xl'>
-          <div className='bg-white/70 backdrop-blur-xl border border-white/80 shadow-xl shadow-teal-100/50 rounded-[32px] p-10'>
-            <div className='lg:hidden flex items-center gap-2 mb-8'>
-              <LuHeart size={22} className='text-teal-500' />
-              <span className='text-teal-600 font-bold text-xl'>
-                StressTracker AI
-              </span>
+          {/* Title + search */}
+          <div className='flex items-center justify-between gap-3 mb-4'>
+            <div>
+              <div className='text-base font-semibold text-slate-800'>Log Terakhir</div>
+              <div className='text-xs text-slate-400 mt-0.5'>{filtered.length} entri ditemukan</div>
             </div>
-
-            <h1 className='text-3xl font-bold text-slate-800'>
-              Buat akun baru
-            </h1>
-
-            <p className='text-slate-400 mt-2 text-sm'>
-              Data hanya diisi sekali untuk personalisasi AI
-            </p>
-
-            <form className='mt-8 flex flex-col gap-5' onSubmit={handleSubmit}>
-              {/* Nama & Email */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Nama lengkap
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuUser size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='text'
-                      placeholder='Nova Wijaya'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Email
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuMail size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='email'
-                      placeholder='nama@email.com'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Usia & Gender */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Usia
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuCalendar
-                      size={16}
-                      className='text-slate-300 shrink-0'
-                    />
-
-                    <input
-                      type='number'
-                      placeholder='22'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Jenis kelamin
-                  </label>
-
-                  <select className='bg-slate-50 border border-slate-200 focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all outline-none text-sm text-slate-700'>
-                    <option>Laki-laki</option>
-                    <option>Perempuan</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Tinggi & Berat */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Tinggi badan (cm)
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuRuler size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='number'
-                      placeholder='170'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Berat badan (kg)
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuWeight size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='number'
-                      placeholder='65'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pekerjaan & Aktivitas */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Pekerjaan
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuBriefcase
-                      size={16}
-                      className='text-slate-300 shrink-0'
-                    />
-
-                    <select className='bg-transparent outline-none text-sm text-slate-700 w-full'>
-                      <option>Mahasiswa</option>
-                      <option>Karyawan</option>
-                      <option>Freelancer</option>
-                      <option>Guru</option>
-                      <option>Dokter</option>
-                      <option>Wirausaha</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Level aktivitas
-                  </label>
-
-                  <select className='bg-slate-50 border border-slate-200 focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all outline-none text-sm text-slate-700'>
-                    <option>Rendah</option>
-                    <option>Sedang</option>
-                    <option>Tinggi</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className='flex flex-col gap-1.5'>
-                <label className='text-sm font-medium text-slate-600'>Password</label>
-                <div className={`flex items-center gap-2 bg-slate-50 border focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all ${
-                  submitted && !isPasswordValid(password) ? 'border-red-300' : 'border-slate-200 focus-within:border-teal-400'
-                }`}>
-                  <LuLock size={16} className='text-slate-300 shrink-0' />
-                  <input
-                    type='password'
-                    placeholder='Min. 8 karakter'
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                  />
-                </div>
-                <PasswordStrength password={password} />
-              </div>
-
-              <button
-                type='submit'
-                className='mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-teal-200 transition-all active:scale-[0.98]'
-              >
-                Buat akun & mulai
-                <LuArrowRight size={16} />
-              </button>
-
-              <div className='flex items-center gap-3 my-1'>
-                <div className='flex-1 h-px bg-slate-100'></div>
-                <span className='text-xs text-slate-300'>atau</span>
-                <div className='flex-1 h-px bg-slate-100'></div>
-              </div>
-
-              <button
-                type='button'
-                className='flex items-center justify-center gap-3 w-full border border-slate-200 bg-white hover:bg-slate-50 py-3.5 rounded-2xl font-medium text-slate-600 text-sm transition-all active:scale-[0.98] shadow-sm'
-              >
-                <FcGoogle size={20} />
-                Daftar dengan Google
-              </button>
-            </form>
-
-            <p className='text-center text-sm text-slate-400 mt-6'>
-              Sudah punya akun?{' '}
-              <Link
-                to='/login'
-                className='text-teal-500 hover:text-teal-600 font-semibold'
-              >
-                Masuk
-              </Link>
-            </p>
+            <div className='relative'>
+              <LuSearch size={14} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
+              <input
+                type='text'
+                placeholder='Cari tanggal…'
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className='pl-8 pr-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-teal-400 w-40 transition-all'
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
+                >
+                  <LuX size={12} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    )
-}
 
-export default Register;
+          {/* Filter chips */}
+          <div className='flex flex-wrap items-center gap-2 mb-5'>
+            <LuFilter size={13} className='text-slate-400 flex-shrink-0' />
+            {stressFilters.map((f) => (
+              <FilterChip
+                key={f}
+                label={f}
+                active={filterStress === f}
+                onClick={() => setFilterStress(f)}
+              />
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className='text-center py-12 text-slate-400'>
+              <LuCalendar size={32} className='mx-auto mb-3 opacity-40' />
+              <div className='text-sm'>Tidak ada log yang cocok</div>
+            </div>
+          ) : (
+            <div className='flex flex-col gap-2'>
+              {filtered.map((entry, idx) => {
+                const prevEntry = filtered[idx + 1] ?? null
+                return (
+                  <RiwayatRow
+                    key={entry.id}
+                    entry={entry}
+                    prevEntry={prevEntry}
+                    isExpanded={expandedId === entry.id}
+                    onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                  />
+                )
+              })}
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    </MainLayout>
+  )
+}
