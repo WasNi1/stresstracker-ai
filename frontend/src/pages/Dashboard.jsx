@@ -6,6 +6,7 @@ import MetricCard from '../components/MetricCard'
 import SleepCard from '../components/SleepCard'
 import RecommendationCard from '../components/RecommendationCard'
 import SkeletonCard, { SkeletonChart, SkeletonBlock } from '../components/SkeletonCard'
+import { getDashboard } from '../api/dashboard'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -20,9 +21,14 @@ function useDashboardData() {
 
   const fetchData = () => {
     setLoading(true)
+    // TODO: uncomment ketika backend sudah siap
+    // getDashboard()
+    //   .then((res) => setData(res.data.data))
+    //   .catch(() => setData(null))
+    //   .finally(() => setLoading(false))
+
+    // Simulasi sementara — hapus setTimeout ini ketika backend sudah siap
     setTimeout(() => {
-      // TODO: ganti dengan fetch('/api/dashboard') ketika backend sudah siap
-      // setData({ stressLevel: 'Moderate', heartRate: '72 BPM', mood: 'Happy', waterIntake: '2L' })
       setData(null)
       setLoading(false)
     }, 1500)
