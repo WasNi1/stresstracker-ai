@@ -11,7 +11,6 @@ import {
   LuFilter,
   LuX,
   LuActivity,
-  LuFire,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { getRiwayat, getRiwayatChart } from '../api/riwayat'
