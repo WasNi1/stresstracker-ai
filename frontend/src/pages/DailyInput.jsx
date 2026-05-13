@@ -247,8 +247,8 @@ function Step3() {
           onClick={() => setOlahraga(true)}
           className={`px-4 py-2 rounded-full border text-sm transition-all ${
             olahraga === true
-              ? 'bg-teal-500/20 border-teal-500/50 text-teal-300'
-              : 'border-slate-600 text-slate-400 hover:border-teal-500/40'
+              ? 'bg-teal-500 border-teal-500 text-white'
+              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
           }`}
         >
           Ya, olahraga
@@ -257,8 +257,8 @@ function Step3() {
           onClick={() => setOlahraga(false)}
           className={`px-4 py-2 rounded-full border text-sm transition-all ${
             olahraga === false
-              ? 'bg-teal-500/20 border-teal-500/50 text-teal-300'
-              : 'border-slate-600 text-slate-400 hover:border-teal-500/40'
+              ? 'bg-teal-500 border-teal-500 text-white'
+              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
           }`}
         >
           Tidak hari ini
@@ -266,12 +266,12 @@ function Step3() {
       </div>
 
       {olahraga && (
-        <div className='bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 mb-5'>
-          <div className='text-sm font-medium text-slate-300 mb-2'>Jenis olahraga?</div>
+        <div className='bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-5'>
+          <div className='text-sm font-medium text-slate-600 mb-2'>Jenis olahraga?</div>
           <ChipGroup options={['Lari', 'Gym', 'Yoga', 'Renang', 'Sepeda', 'Jalan kaki', 'Badminton']} />
-          <div className='text-sm font-medium text-slate-300 mb-2'>Berapa lama?</div>
+          <div className='text-sm font-medium text-slate-600 mb-2'>Berapa lama?</div>
           <Slider id='ed' min={5} max={120} defaultValue={30} unit=' menit' />
-          <div className='text-sm font-medium text-slate-300 mb-2'>Intensitas</div>
+          <div className='text-sm font-medium text-slate-600 mb-2'>Intensitas</div>
           <ChipGroup options={['Ringan', 'Sedang', 'Berat']} />
         </div>
       )}
@@ -338,14 +338,14 @@ function Step6() {
         <YesNo label='Sempat meditasi / napas dalam?' />
         <YesNo label='Lakukan hobi yang kamu suka?' />
         <div className='flex justify-between items-center py-3'>
-          <span className='text-sm text-slate-300'>
+          <span className='text-sm text-slate-600'>
             Waktu di luar ruangan{' '}
-            <span className='text-xs text-slate-500'>(menit, opsional)</span>
+            <span className='text-xs text-slate-400'>(menit, opsional)</span>
           </span>
           <input
             type='number'
             placeholder='mnt'
-            className='w-16 px-2 py-1.5 bg-slate-800 border border-slate-600 rounded-lg text-slate-200 font-mono text-sm focus:outline-none focus:border-teal-500'
+            className='w-16 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-mono text-sm focus:outline-none focus:border-teal-400'
           />
         </div>
       </div>
@@ -357,40 +357,38 @@ function StepResult({ onReset }) {
   return (
     <>
       {/* Hero */}
-      <div className='bg-teal-500/10 border border-teal-500/25 rounded-2xl p-6 text-center mb-5'>
-        <div className='text-xs font-mono text-teal-400 mb-2 tracking-widest'>STRESS LEVEL HARI INI</div>
-        <div className='font-serif text-5xl text-teal-300 leading-none mb-2'>Sedang</div>
-        <div className='text-sm text-teal-400'>Level 2 dari 4 — Skala PSS</div>
+      <div className='bg-teal-50 border border-teal-200 rounded-2xl p-6 text-center mb-5'>
+        <div className='text-xs font-mono text-teal-500 mb-2 tracking-widest'>STRESS LEVEL HARI INI</div>
+        <div className='text-5xl font-bold text-teal-600 leading-none mb-2'>Sedang</div>
+        <div className='text-sm text-teal-500'>Level 2 dari 4 — Skala PSS</div>
       </div>
 
-      {/* Sub-metrics */}
       <div className='grid grid-cols-2 gap-3 mb-5'>
-        <div className='bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center'>
-          <div className='text-xs font-mono text-slate-500 mb-2'>KUALITAS TIDUR</div>
-          <div className='text-xl font-serif text-blue-400'>Cukup</div>
-          <div className='text-xs text-slate-500 mt-1'>Level 3 / 4 (PSQI)</div>
+        <div className='bg-blue-50 border border-blue-100 rounded-xl p-4 text-center'>
+          <div className='text-xs font-mono text-slate-400 mb-2'>KUALITAS TIDUR</div>
+          <div className='text-xl font-bold text-blue-500'>Cukup</div>
+          <div className='text-xs text-slate-400 mt-1'>Level 3 / 4 (PSQI)</div>
         </div>
-        <div className='bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center'>
-          <div className='text-xs font-mono text-slate-500 mb-2'>MOOD</div>
-          <div className='text-xl font-serif text-teal-300'>6 / 10</div>
-          <div className='text-xs text-slate-500 mt-1'>Di atas rata-rata</div>
+        <div className='bg-teal-50 border border-teal-100 rounded-xl p-4 text-center'>
+          <div className='text-xs font-mono text-slate-400 mb-2'>MOOD</div>
+          <div className='text-xl font-bold text-teal-500'>6 / 10</div>
+          <div className='text-xs text-slate-400 mt-1'>Di atas rata-rata</div>
         </div>
       </div>
 
-      {/* Rekomendasi */}
-      <div className='text-sm font-medium text-slate-300 mb-3'>Rekomendasi AI untuk besok</div>
+      <div className='text-sm font-medium text-slate-600 mb-3'>Rekomendasi AI untuk besok</div>
       {[
-        '📱 Matikan HP minimal 30 menit sebelum tidur. Screen time malammu masih tinggi.',
-        '☕ Batasi kafein setelah jam 14.00 untuk jaga kualitas tidur malam ini.',
-        '🧘 Pertahankan rutinitas olahragamu — ini faktor terbesar yang turunkan stressmu.',
+        '📱 Matikan HP minimal 30 menit sebelum tidur.',
+        '☕ Batasi kafein setelah jam 14.00.',
+        '🧘 Pertahankan rutinitas olahragamu.',
       ].map((r, i) => (
-        <div key={i} className='bg-slate-800/60 rounded-xl px-4 py-3 text-sm text-slate-400 leading-relaxed mb-2'>
+        <div key={i} className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed mb-2'>
           {r}
         </div>
       ))}
 
-      <div className='text-xs text-slate-600 leading-relaxed px-4 py-3 bg-slate-800/40 rounded-xl mt-4'>
-        Rekomendasi ini dibuat oleh AI berdasarkan pola data harianmu. Ini bukan diagnosis medis. Jika stress berkepanjangan, pertimbangkan konsultasi dengan profesional.
+      <div className='text-xs text-slate-400 leading-relaxed px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl mt-4'>
+        Rekomendasi ini dibuat oleh AI. Bukan diagnosis medis.
       </div>
 
       <button

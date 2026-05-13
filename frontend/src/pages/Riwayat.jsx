@@ -307,10 +307,14 @@ function RiwayatRow({ entry, prevEntry, isExpanded, onToggle }) {
         </div>
 
         {/* Tags */}
-        <div className='flex flex-wrap gap-2 flex-1'>
+        <div className='hidden sm:flex flex-wrap gap-2 flex-1'>
           <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
           <Tag color={entry.sleep.color}>Tidur: {entry.sleep.label}</Tag>
           <Tag color={entry.mood.color}>Mood: {entry.mood.score}/10</Tag>
+        </div>
+        {/* Tags mobile */}
+        <div className='flex sm:hidden flex-col gap-1 flex-1'>
+          <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
         </div>
 
         {/* Mood trend vs previous */}
@@ -433,7 +437,7 @@ export default function RiwayatPage() {
 
   return (
     <MainLayout title='Riwayat Log'>
-      <div className='max-w-3xl mx-auto'>
+      <div className='max-w-3xl mx-auto px-0 md:px-0'>
 
         {/* ── Stats row ── */}
         <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
@@ -497,7 +501,7 @@ export default function RiwayatPage() {
           </div>
 
           {/* Filter chips */}
-          <div className='flex items-center gap-2 mb-5 flex-wrap'>
+        <div className='flex flex-wrap items-center gap-2 mb-5'>
             <LuFilter size={13} className='text-slate-400 flex-shrink-0' />
             {stressFilters.map((f) => (
               <FilterChip
@@ -507,9 +511,7 @@ export default function RiwayatPage() {
                 onClick={() => setFilterStress(f)}
               />
             ))}
-          </div>
-
-          {/* Log list */}
+        </div>
           {filtered.length === 0 ? (
             <div className='text-center py-12 text-slate-400'>
               <LuCalendar size={32} className='mx-auto mb-3 opacity-40' />

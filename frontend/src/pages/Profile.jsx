@@ -86,7 +86,7 @@ export default function Profile() {
           </div>
 
           {editOpen && (
-            <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-2 gap-3'>
+            <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3'>
               {[
                 { label: 'Nama lengkap', placeholder: 'Nova Wijaya' },
                 { label: 'Email',        placeholder: 'nova@email.com' },
@@ -129,7 +129,7 @@ export default function Profile() {
         </div>
 
         {/* Data Fisik + Pencapaian */}
-        <div className='grid md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <SectionCard title='DATA FISIK'>
             <DataRow label='Tinggi badan' value='170 cm' />
             <DataRow label='Berat badan' value='65 kg' />

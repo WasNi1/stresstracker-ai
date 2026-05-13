@@ -349,7 +349,7 @@ export default function InsightsPage() {
       <div className='max-w-3xl mx-auto'>
 
         {/* Stat cards */}
-        <div className='grid grid-cols-3 gap-3 mb-6'>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
           <StatCard label='TIDUR TERBAIK' value='Sabtu' sub='Rata-rata 8.2 jam' color='teal' icon={LuMoon} />
           <StatCard label='HARI PALING STRESS' value='Senin' sub='PSS rata-rata level 3' color='red' icon={LuBrain} />
           <StatCard label='FAKTOR PELINDUNG' value='Olahraga' sub='Turunkan stress 0.8 level' color='slate' icon={LuShield} />
@@ -390,7 +390,7 @@ export default function InsightsPage() {
         </Section>
 
         {/* Faktor risiko & pelindung */}
-        <div className='grid md:grid-cols-2 gap-5 mb-5'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mb-5'>
           <div className='bg-teal-50 border border-teal-100 rounded-3xl p-5'>
             <div className='flex items-center gap-2 mb-4'>
               <div className='w-7 h-7 rounded-xl bg-teal-100 flex items-center justify-center'>
