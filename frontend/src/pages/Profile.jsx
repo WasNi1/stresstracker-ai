@@ -2,14 +2,6 @@ import { useState } from 'react'
 import {
   LuMail,
   LuCalendar,
-  LuDownload,
-  LuTrash2,
-  LuLogOut,
-  LuLock,
-  LuBell,
-  LuShield,
-  LuPalette,
-  LuChevronRight,
   LuPencil,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
@@ -28,35 +20,11 @@ function Tag({ color, children }) {
   )
 }
 
-function Toggle({ defaultOn = false }) {
-  const [on, setOn] = useState(defaultOn)
-  return (
-    <button
-      onClick={() => setOn(!on)}
-      className={`relative w-11 h-6 rounded-full transition-all ${on ? 'bg-teal-500' : 'bg-slate-200'}`}
-    >
-      <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all ${on ? 'left-[22px]' : 'left-[3px]'}`} />
-    </button>
-  )
-}
-
 function DataRow({ label, value, last = false }) {
   return (
     <div className={`flex items-center justify-between py-3 ${!last && 'border-b border-slate-100'}`}>
       <span className='text-sm text-slate-400'>{label}</span>
       <span className='font-mono text-sm text-slate-700'>{value}</span>
-    </div>
-  )
-}
-
-function SettingsItem({ label, sub, subRed = false, right }) {
-  return (
-    <div className='flex items-center justify-between py-4 border-b border-slate-100 last:border-0'>
-      <div>
-        <div className='text-sm font-medium text-slate-700'>{label}</div>
-        {sub && <div className={`text-xs mt-0.5 ${subRed ? 'text-red-400' : 'text-slate-400'}`}>{sub}</div>}
-      </div>
-      <div className='ml-4 shrink-0'>{right}</div>
     </div>
   )
 }
@@ -183,64 +151,6 @@ export default function Profile() {
             </div>
           </SectionCard>
         </div>
-
-        {/* Notifikasi */}
-        <SectionCard title='NOTIFIKASI' icon={LuBell}>
-          <SettingsItem label='Pengingat input harian' sub='Ingatkan untuk isi log setiap hari' right={<Toggle defaultOn />} />
-          <SettingsItem label='Jam pengingat' sub='Sebelum tidur malam' right={
-            <select className='bg-slate-50 border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 focus:outline-none'>
-              <option>19:00</option>
-              <option>20:00</option>
-              <option>21:00</option>
-            </select>
-          } />
-          <SettingsItem label='Alert stress tinggi' sub='Notif jika stress mencapai level 3–4' right={<Toggle defaultOn />} />
-          <SettingsItem label='Ringkasan mingguan' sub='Laporan performa setiap Minggu pagi' right={<Toggle defaultOn />} />
-        </SectionCard>
-
-        {/* Privasi & Data */}
-        <SectionCard title='PRIVASI & DATA' icon={LuShield}>
-          <SettingsItem label='Data anonim untuk riset' sub='Bantu tingkatkan akurasi model AI' right={<Toggle />} />
-          <SettingsItem label='Export data saya' sub='Unduh semua log dalam format CSV' right={
-            <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:border-teal-400 hover:text-teal-500 transition-all'>
-              <LuDownload size={12} />Export
-            </button>
-          } />
-          <SettingsItem label='Hapus semua data' sub='Tindakan ini tidak bisa dibatalkan' subRed right={
-            <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
-              <LuTrash2 size={12} />Hapus
-            </button>
-          } />
-        </SectionCard>
-
-        {/* Tampilan */}
-        <SectionCard title='TAMPILAN' icon={LuPalette}>
-          <SettingsItem label='Tema gelap' sub='Aktif secara default' right={<Toggle defaultOn />} />
-          <SettingsItem label='Bahasa' sub='Bahasa tampilan aplikasi' right={
-            <select className='bg-slate-50 border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 focus:outline-none'>
-              <option>Indonesia</option>
-              <option>English</option>
-            </select>
-          } />
-        </SectionCard>
-
-        {/* Akun */}
-        <SectionCard title='AKUN' icon={LuLock}>
-          <SettingsItem label='Ubah password' right={
-            <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'>
-              Ubah<LuChevronRight size={12} />
-            </button>
-          } />
-          <SettingsItem label='Keluar dari akun' right={
-            <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
-              <LuLogOut size={12} />Logout
-            </button>
-          } />
-        </SectionCard>
-
-        <p className='text-center text-xs text-slate-300 pb-6'>
-          StressTracker AI · v1.0.0 · Dibuat dengan ❤️
-        </p>
 
       </div>
     </MainLayout>
