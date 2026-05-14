@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LuHeart, LuBrain, LuMoon, LuActivity, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX, LuAlertCircle } from 'react-icons/lu'
+import { LuHeart, LuBrain, LuMoon, LuActivity, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX} from 'react-icons/lu'
 import { FcGoogle } from 'react-icons/fc'
 import axios from '../api/axios'
 
