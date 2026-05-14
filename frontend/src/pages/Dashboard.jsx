@@ -25,7 +25,7 @@ function useDashboardData() {
     setLoading(true)
     setError(null)
     
-    // ✅ UNCOMMENTED: Fetch data from backend
+    //  UNCOMMENTED: Fetch data from backend
     getDashboard()
       .then((res) => {
         if (res.data.success) {
@@ -69,25 +69,24 @@ function DashboardSkeleton() {
   )
 }
 
-// ========== ERROR STATE COMPONENT ==========
-function ErrorState({ error, onRetry }) {
-  return (
-    <div className='mt-6 flex items-start gap-4 p-6 bg-red-50 border-2 border-red-200 rounded-3xl'>
-      <LuAlertCircle size={24} className='text-red-500 flex-shrink-0 mt-0.5' />
-      <div className='flex-1'>
-        <h3 className='font-semibold text-red-900 mb-1'>Gagal memuat dashboard</h3>
-        <p className='text-sm text-red-700 mb-4'>{error}</p>
-        <button
-          onClick={onRetry}
-          className='flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-medium text-sm'
-        >
-          <LuRefreshCw size={16} />
-          Coba Lagi
-        </button>
-      </div>
-    </div>
-  )
-}
+// ERROR STATE COMPONENT 
+// function ErrorState({ error, onRetry }) {
+//   return (
+//     <div className='mt-6 flex items-start gap-4 p-6 bg-red-50 border-2 border-red-200 rounded-3xl'>
+//       <div className='flex-1'>
+//         <h3 className='font-semibold text-red-900 mb-1'>Gagal memuat dashboard</h3>
+//         <p className='text-sm text-red-700 mb-4'>{error}</p>
+//         <button
+//           onClick={onRetry}
+//           className='flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-medium text-sm'
+//         >
+//           <LuRefreshCw size={16} />
+//           Coba Lagi
+//         </button>
+//       </div>
+//     </div>
+//   )
+// }
 
 function Dashboard() {
   const { data, loading, error, refetch } = useDashboardData()
@@ -98,10 +97,10 @@ function Dashboard() {
         <DashboardSkeleton />
       ) : (
         <div>
-          {/* Error Alert */}
+          {/* Error Alert
           {error && (
             <ErrorState error={error} onRetry={refetch} />
-          )}
+          )} */}
 
           {/* Greeting */}
           <div className='mb-6'>

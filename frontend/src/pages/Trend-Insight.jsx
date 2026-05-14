@@ -17,9 +17,6 @@ import {
 import MainLayout from '../layouts/MainLayout'
 import { getTrendChart, getTrendPerHari, getSleepStressCorr, getFaktorData, getAiInsights } from '../api/trend-insight'
 
-/* ─────────────────────────────────────────────
-   Helper: warna
-───────────────────────────────────────────── */
 
 function stressColor(v) {
   if (v >= 3) return '#f87171'
@@ -48,9 +45,9 @@ function Tag({ color, children }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   Empty / Loading states
-───────────────────────────────────────────── */
+
+  //  Empty / Loading states
+
 
 function ChartSkeleton({ height = 80 }) {
   return (
@@ -91,9 +88,9 @@ function InsightSkeleton() {
   )
 }
 
-/* ─────────────────────────────────────────────
-   StatCard
-───────────────────────────────────────────── */
+
+  //  StatCard
+
 
 function StatCard({ label, value, sub, color = 'slate', icon: Icon, loading }) {
   const valColor = {
@@ -121,9 +118,7 @@ function StatCard({ label, value, sub, color = 'slate', icon: Icon, loading }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   Tabs
-───────────────────────────────────────────── */
+// Tabs
 
 function Tabs({ tabs, active, onChange }) {
   return (
@@ -145,9 +140,7 @@ function Tabs({ tabs, active, onChange }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   Section wrapper
-───────────────────────────────────────────── */
+// Section
 
 function Section({ title, sub, children, light = false }) {
   if (light) {
@@ -172,9 +165,7 @@ function Section({ title, sub, children, light = false }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   TrendChart
-───────────────────────────────────────────── */
+// Trendchart
 
 function TrendChart({ metric, data, loading }) {
   if (loading) return <ChartSkeleton height={80} />
@@ -236,9 +227,7 @@ function TrendChart({ metric, data, loading }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   PerHariChart
-───────────────────────────────────────────── */
+// PerHariChart
 
 function PerHariChart({ data, loading }) {
   if (loading) return <ChartSkeleton height={80} />
@@ -283,9 +272,7 @@ function PerHariChart({ data, loading }) {
   )
 }
 
-/* ─────────────────────────────────────────────
-   SleepStressChart
-───────────────────────────────────────────── */
+// SleepStressChart
 
 function SleepStressChart({ data, loading, pearson }) {
   if (loading) return <ChartSkeleton height={100} />
@@ -424,7 +411,6 @@ function useTrendData() {
     setLoading(true)
     setError(null)
 
-    // ── TODO: Uncomment blok ini ketika backend sudah siap ──────────────────
     // Promise.all([
     //   getTrendChart({ periode: '20hari' }),
     //   getTrendPerHari(),
@@ -445,7 +431,6 @@ function useTrendData() {
     //   .finally(() => setLoading(false))
     // ────────────────────────────────────────────────────────────────────────
 
-    // Simulasi sementara — hapus blok ini ketika backend sudah siap
     setTimeout(() => {
       setTrendChart(null)
       setPerHari(null)
@@ -467,9 +452,7 @@ function useTrendData() {
   }
 }
 
-/* ─────────────────────────────────────────────
-   Main Component
-───────────────────────────────────────────── */
+// Main Component
 
 const METRIC_TABS = [
   { id: 'stress', label: '🧠 Stress' },
@@ -486,7 +469,6 @@ export default function TrendInsightPage() {
     loading,
   } = useTrendData()
 
-  /* Derived summary values — '-' selama belum ada data */
   const tidurTerbaik    = summary?.tidurTerbaik    ?? '-'
   const hariPalingStres = summary?.hariPalingStres ?? '-'
   const faktorPelindung = summary?.faktorPelindung ?? '-'
