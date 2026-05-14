@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   LuCalendar,
   LuChevronRight,
@@ -10,14 +10,16 @@ import {
   LuSearch,
   LuFilter,
   LuX,
+  LuActivity,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
+import { getRiwayat, getRiwayatChart } from '../api/riwayat'
 
 /* ─────────────────────────────────────────────
-   Data dummy riwayat log
+   Data dummy riwayat log (fallback)
 ───────────────────────────────────────────── */
 
-const riwayatData = [
+const riwayatDataDummy = [
   {
     id: 1,
     date: '01 Mei 2026',
@@ -339,7 +341,7 @@ function RiwayatRow({ entry, prevEntry, isExpanded, onToggle }) {
 }
 
 /* ─────────────────────────────────────────────
-   Stat mini-card
+   Stat Card Component
 ───────────────────────────────────────────── */
 
 function StatCard({ label, value, sub, color = 'slate' }) {
@@ -360,10 +362,19 @@ function StatCard({ label, value, sub, color = 'slate' }) {
 }
 
 /* ─────────────────────────────────────────────
-   Bar mini chart
+   Mini Bar Chart Component
 ───────────────────────────────────────────── */
 
-function MiniBarChart({ data }) {
+function MiniBarChart({ data, empty = false }) {
+  if (empty || !data || data.length === 0) {
+    return (
+      <div className='h-40 flex flex-col items-center justify-center gap-2'>
+        <LuActivity size={32} className='text-slate-200' />
+        <p className='text-sm text-slate-300 font-medium'>Belum ada data</p>
+      </div>
+    )
+  }
+
   const max = 4
   const barColor = (level) => {
     if (level >= 3) return 'bg-red-400/70'
@@ -372,7 +383,7 @@ function MiniBarChart({ data }) {
   }
 
   return (
-    <div className='flex items-end gap-1.5 h-16 mt-3'>
+    <div className='flex items-end gap-1.5 h-40 mt-3'>
       {data.map((d, i) => (
         <div key={i} className='flex flex-col items-center gap-1 flex-1'>
           <div
@@ -387,7 +398,45 @@ function MiniBarChart({ data }) {
 }
 
 /* ─────────────────────────────────────────────
-   Filter Chip
+   Custom hook untuk fetch riwayat data
+───────────────────────────────────────────── */
+
+function useRiwayatData() {
+  const [data, setData] = useState(undefined)
+  const [chartData, setChartData] = useState(undefined)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const fetchData = () => {
+    setLoading(true)
+    setError(null)
+    
+    // TODO: uncomment ketika backend sudah siap
+    // getRiwayat({ limit: 30 })
+    //   .then((res) => setData(res.data.data))
+    //   .catch((err) => {
+    //     setError(err.message)
+    //     setData(null)
+    //   })
+    //   .finally(() => setLoading(false))
+    
+    // Simulasi sementara — hapus setTimeout ini ketika backend sudah siap
+    setTimeout(() => {
+      setData(null)
+      setChartData(null)
+      setLoading(false)
+    }, 1500)
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  return { data, chartData, loading, error, refetch: fetchData }
+}
+
+/* ─────────────────────────────────────────────
+   Filter Chip Component
 ───────────────────────────────────────────── */
 
 function FilterChip({ label, active, onClick }) {
@@ -410,11 +459,16 @@ function FilterChip({ label, active, onClick }) {
 ───────────────────────────────────────────── */
 
 export default function RiwayatPage() {
+  const { data, chartData: apiChartData, loading } = useRiwayatData()
   const [expandedId, setExpandedId] = useState(null)
   const [search, setSearch] = useState('')
   const [filterStress, setFilterStress] = useState('Semua')
 
   const stressFilters = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
+
+  // Gunakan data dari API jika ada, jika tidak gunakan dummy
+  const riwayatData = data?.entries || riwayatDataDummy
+  const stats = data?.stats
 
   const filtered = riwayatData.filter((e) => {
     const matchSearch =
@@ -424,16 +478,20 @@ export default function RiwayatPage() {
     return matchSearch && matchFilter
   })
 
-  const avgStress = (
+  const avgStress = stats?.avgStress ?? (
     riwayatData.reduce((s, e) => s + e.stress.level, 0) / riwayatData.length
   ).toFixed(1)
 
-  const totalLog = riwayatData.length
+  const totalLog = stats?.totalLog ?? riwayatData.length
+  const streak = stats?.streak ?? '-'
+  const logWeek = stats?.logWeek ?? '-'
 
-  const chartData = [...riwayatData]
-    .reverse()
-    .slice(-7)
-    .map((e) => ({ level: e.stress.level, dateShort: e.dateShort }))
+  const chartData = apiChartData || (
+    [...riwayatData]
+      .reverse()
+      .slice(-7)
+      .map((e) => ({ level: e.stress.level, dateShort: e.dateShort }))
+  )
 
   return (
     <MainLayout title='Riwayat Log'>
@@ -443,8 +501,8 @@ export default function RiwayatPage() {
         <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
           <StatCard label='TOTAL LOG' value={totalLog} sub='Sejak bergabung' color='slate' />
           <StatCard label='RATA-RATA STRESS' value={avgStress} sub='Level (PSS-based)' color='amber' />
-          <StatCard label='STREAK' value='7' sub='Hari berturut-turut 🔥' color='teal' />
-          <StatCard label='LOG MINGGU INI' value='6/7' sub='Hari tercatat' color='slate' />
+          <StatCard label='STREAK' value={streak} sub='Hari berturut-turut 🔥' color='teal' />
+          <StatCard label='LOG MINGGU INI' value={logWeek} sub='Hari tercatat' color='slate' />
         </div>
 
         {/* ── Trend mini chart ── */}
@@ -456,7 +514,7 @@ export default function RiwayatPage() {
             </span>
           </div>
           <div className='text-xs text-slate-400 mb-1'>Level stress harian</div>
-          <MiniBarChart data={chartData} />
+          <MiniBarChart data={chartData} empty={!data} />
           <div className='flex gap-3 mt-3 flex-wrap'>
             {[
               { label: 'Rendah', cls: 'bg-teal-400' },
@@ -501,7 +559,7 @@ export default function RiwayatPage() {
           </div>
 
           {/* Filter chips */}
-        <div className='flex flex-wrap items-center gap-2 mb-5'>
+          <div className='flex flex-wrap items-center gap-2 mb-5'>
             <LuFilter size={13} className='text-slate-400 flex-shrink-0' />
             {stressFilters.map((f) => (
               <FilterChip
@@ -511,7 +569,8 @@ export default function RiwayatPage() {
                 onClick={() => setFilterStress(f)}
               />
             ))}
-        </div>
+          </div>
+
           {filtered.length === 0 ? (
             <div className='text-center py-12 text-slate-400'>
               <LuCalendar size={32} className='mx-auto mb-3 opacity-40' />
