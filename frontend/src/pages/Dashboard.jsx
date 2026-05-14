@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LuRefreshCw, LuAlertCircle } from 'react-icons/lu'
+import { LuRefreshCw } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import ActivityCard from '../components/ActivityCard'
 import HealthChart from '../components/HealthChart'
