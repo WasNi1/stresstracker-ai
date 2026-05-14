@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
   LuCalendar,
-  LuChevronRight,
   LuChevronDown,
   LuChevronUp,
   LuTrendingDown,
@@ -11,186 +10,10 @@ import {
   LuFilter,
   LuX,
   LuActivity,
+  LuLoader,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { getRiwayat, getRiwayatChart } from '../api/riwayat'
-
-/* ─────────────────────────────────────────────
-   Data dummy riwayat log (fallback)
-───────────────────────────────────────────── */
-
-const riwayatDataDummy = [
-  {
-    id: 1,
-    date: '01 Mei 2026',
-    dateShort: '01/05',
-    dayName: 'Kamis',
-    stress: { level: 2, label: 'Sedang', color: 'amber' },
-    sleep: { level: 3, label: 'Cukup', color: 'blue' },
-    mood: { score: 7, color: 'teal' },
-    details: {
-      tidurJam: 7,
-      kualitasTidur: '😊',
-      anxiety: 2,
-      energi: '⚡',
-      screentime: 5,
-      screenSebelumTidur: 25,
-      bebanKerja: '😐',
-      olahraga: true,
-      jenisOlahraga: 'Lari',
-      kafein: 2,
-      airPutih: 2.5,
-      deadline: false,
-      meditasi: true,
-    },
-    rekomendasi: [
-      '☕ Batasi kafein setelah jam 14.00 untuk jaga kualitas tidur.',
-      '🧘 Pertahankan rutinitas meditasimu — sangat efektif turunkan kecemasan.',
-    ],
-  },
-  {
-    id: 2,
-    date: '30 Apr 2026',
-    dateShort: '30/04',
-    dayName: 'Rabu',
-    stress: { level: 3, label: 'Tinggi', color: 'red' },
-    sleep: { level: 2, label: 'Buruk', color: 'red' },
-    mood: { score: 4, color: 'red' },
-    details: {
-      tidurJam: 4.5,
-      kualitasTidur: '😔',
-      anxiety: 4,
-      energi: '😴',
-      screentime: 9,
-      screenSebelumTidur: 75,
-      bebanKerja: '😓',
-      olahraga: false,
-      jenisOlahraga: null,
-      kafein: 4,
-      airPutih: 1.5,
-      deadline: true,
-      meditasi: false,
-    },
-    rekomendasi: [
-      '📱 Matikan HP minimal 30 menit sebelum tidur. Screen time malammu 75 menit — terlalu tinggi.',
-      '😴 Prioritaskan tidur malam ini minimal 7 jam untuk recovery.',
-      '☕ Kurangi kafein — 4 gelas terlalu banyak dan memperburuk kecemasan.',
-    ],
-  },
-  {
-    id: 3,
-    date: '29 Apr 2026',
-    dateShort: '29/04',
-    dayName: 'Selasa',
-    stress: { level: 2, label: 'Sedang', color: 'amber' },
-    sleep: { level: 3, label: 'Baik', color: 'teal' },
-    mood: { score: 6, color: 'teal' },
-    details: {
-      tidurJam: 7.5,
-      kualitasTidur: '😊',
-      anxiety: 2,
-      energi: '⚡',
-      screentime: 6,
-      screenSebelumTidur: 30,
-      bebanKerja: '😐',
-      olahraga: true,
-      jenisOlahraga: 'Gym',
-      kafein: 2,
-      airPutih: 3,
-      deadline: false,
-      meditasi: false,
-    },
-    rekomendasi: [
-      '🏃 Bagus! Olahraga rutin sangat membantu turunkan stress. Pertahankan.',
-      '💧 Tingkatkan asupan air putih — 3 liter ideal untuk tubuhmu.',
-    ],
-  },
-  {
-    id: 4,
-    date: '28 Apr 2026',
-    dateShort: '28/04',
-    dayName: 'Senin',
-    stress: { level: 1, label: 'Rendah', color: 'teal' },
-    sleep: { level: 4, label: 'Sangat Baik', color: 'teal' },
-    mood: { score: 8, color: 'teal' },
-    details: {
-      tidurJam: 8.5,
-      kualitasTidur: '😄',
-      anxiety: 1,
-      energi: '🔥',
-      screentime: 4,
-      screenSebelumTidur: 10,
-      bebanKerja: '😌',
-      olahraga: true,
-      jenisOlahraga: 'Yoga',
-      kafein: 1,
-      airPutih: 3.5,
-      deadline: false,
-      meditasi: true,
-    },
-    rekomendasi: [
-      '🌟 Hari yang sangat baik! Jadikan ini sebagai baseline harianmu.',
-      '🧘 Meditasi + screen time rendah = kombinasi terbaik. Lanjutkan.',
-    ],
-  },
-  {
-    id: 5,
-    date: '27 Apr 2026',
-    dateShort: '27/04',
-    dayName: 'Minggu',
-    stress: { level: 3, label: 'Tinggi', color: 'red' },
-    sleep: { level: 2, label: 'Buruk', color: 'red' },
-    mood: { score: 3, color: 'red' },
-    details: {
-      tidurJam: 5,
-      kualitasTidur: '😩',
-      anxiety: 4,
-      energi: '🪫',
-      screentime: 10,
-      screenSebelumTidur: 90,
-      bebanKerja: '🤯',
-      olahraga: false,
-      jenisOlahraga: null,
-      kafein: 3,
-      airPutih: 1,
-      deadline: true,
-      meditasi: false,
-    },
-    rekomendasi: [
-      '🚨 Stress sangat tinggi. Pertimbangkan istirahat penuh hari ini.',
-      '📱 Screen time 90 menit sebelum tidur sangat merusak kualitas tidurmu.',
-      '💧 Hanya 1 liter air — dehidrasi memperparah kelelahan dan kecemasan.',
-    ],
-  },
-  {
-    id: 6,
-    date: '26 Apr 2026',
-    dateShort: '26/04',
-    dayName: 'Sabtu',
-    stress: { level: 2, label: 'Sedang', color: 'amber' },
-    sleep: { level: 3, label: 'Cukup', color: 'blue' },
-    mood: { score: 6, color: 'teal' },
-    details: {
-      tidurJam: 7,
-      kualitasTidur: '😐',
-      anxiety: 2,
-      energi: '😐',
-      screentime: 7,
-      screenSebelumTidur: 45,
-      bebanKerja: '🙂',
-      olahraga: true,
-      jenisOlahraga: 'Jalan kaki',
-      kafein: 1,
-      airPutih: 2,
-      deadline: false,
-      meditasi: false,
-    },
-    rekomendasi: [
-      '🚶 Jalan kaki sudah bagus! Coba tambah intensitas untuk hasil optimal.',
-      '📱 Kurangi screen time sebelum tidur ke bawah 30 menit.',
-    ],
-  },
-]
 
 /* ─────────────────────────────────────────────
    Warna & label helper
@@ -213,12 +36,12 @@ function Tag({ color, children }) {
 }
 
 function StressDot({ color }) {
-  const cls = colorMap[color]?.dot ?? colorMap.teal.dot
+  const cls = colorMap[color]?.dot ?? 'bg-slate-300'
   return <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${cls}`} />
 }
 
 function MoodTrend({ current, prev }) {
-  if (!prev) return null
+  if (!prev || !current) return null
   if (current > prev) return <LuTrendingUp size={13} className='text-teal-400' />
   if (current < prev) return <LuTrendingDown size={13} className='text-red-400' />
   return <LuMinus size={13} className='text-slate-500' />
@@ -229,49 +52,60 @@ function MoodTrend({ current, prev }) {
 ───────────────────────────────────────────── */
 
 function DetailRow({ label, value }) {
+  const displayValue =
+    value === null || value === undefined || value === '' ? '-' : value
   return (
     <div className='flex justify-between items-center py-2.5 border-b border-slate-100 last:border-0'>
       <span className='text-xs text-slate-400'>{label}</span>
-      <span className='text-xs font-mono text-slate-700'>{value}</span>
+      <span className='text-xs font-mono text-slate-700'>{displayValue}</span>
     </div>
   )
 }
 
 function ExpandedDetail({ entry }) {
   const { details, rekomendasi } = entry
+
+  /* Semua nilai detail ditampilkan apa adanya dari API;
+     jika null/undefined, DetailRow sudah handle dengan '-' */
   return (
     <div className='mt-4 pt-4 border-t border-slate-100 grid md:grid-cols-2 gap-5'>
 
       {/* Detail data */}
       <div className='bg-slate-50 border border-slate-100 rounded-2xl p-4'>
         <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>DATA HARIAN</div>
-        <DetailRow label='Durasi tidur' value={`${details.tidurJam} jam`} />
-        <DetailRow label='Kualitas tidur' value={details.kualitasTidur} />
-        <DetailRow label='Kecemasan' value={`${details.anxiety} / 5`} />
-        <DetailRow label='Energi' value={details.energi} />
-        <DetailRow label='Screen time' value={`${details.screentime} jam`} />
-        <DetailRow label='HP sebelum tidur' value={`${details.screenSebelumTidur} menit`} />
-        <DetailRow label='Beban kerja' value={details.bebanKerja} />
-        <DetailRow label='Kafein' value={`${details.kafein} gelas`} />
-        <DetailRow label='Air putih' value={`${details.airPutih} liter`} />
-        <DetailRow label='Olahraga' value={details.olahraga ? (details.jenisOlahraga ?? 'Ya') : 'Tidak'} />
-        <DetailRow label='Deadline mendesak' value={details.deadline ? 'Ya' : 'Tidak'} />
-        <DetailRow label='Meditasi' value={details.meditasi ? 'Ya ✓' : 'Tidak'} />
+        <DetailRow label='Durasi tidur'      value={details?.tidurJam != null ? `${details.tidurJam} jam` : null} />
+        <DetailRow label='Kualitas tidur'    value={details?.kualitasTidur} />
+        <DetailRow label='Kecemasan'         value={details?.anxiety != null ? `${details.anxiety} / 5` : null} />
+        <DetailRow label='Energi'            value={details?.energi} />
+        <DetailRow label='Screen time'       value={details?.screentime != null ? `${details.screentime} jam` : null} />
+        <DetailRow label='HP sebelum tidur'  value={details?.screenSebelumTidur != null ? `${details.screenSebelumTidur} menit` : null} />
+        <DetailRow label='Beban kerja'       value={details?.bebanKerja} />
+        <DetailRow label='Kafein'            value={details?.kafein != null ? `${details.kafein} gelas` : null} />
+        <DetailRow label='Air putih'         value={details?.airPutih != null ? `${details.airPutih} liter` : null} />
+        <DetailRow label='Olahraga'          value={details?.olahraga == null ? null : details.olahraga ? (details.jenisOlahraga ?? 'Ya') : 'Tidak'} />
+        <DetailRow label='Deadline mendesak' value={details?.deadline == null ? null : details.deadline ? 'Ya' : 'Tidak'} />
+        <DetailRow label='Meditasi'          value={details?.meditasi == null ? null : details.meditasi ? 'Ya ✓' : 'Tidak'} />
       </div>
 
       {/* Rekomendasi AI */}
       <div>
         <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>REKOMENDASI AI</div>
-        <div className='flex flex-col gap-2'>
-          {rekomendasi.map((r, i) => (
-            <div
-              key={i}
-              className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed'
-            >
-              {r}
-            </div>
-          ))}
-        </div>
+        {rekomendasi && rekomendasi.length > 0 ? (
+          <div className='flex flex-col gap-2'>
+            {rekomendasi.map((r, i) => (
+              <div
+                key={i}
+                className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed'
+              >
+                {r}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className='bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm text-slate-400 italic'>
+            Rekomendasi belum tersedia
+          </div>
+        )}
         <div className='mt-3 text-xs text-slate-400 leading-relaxed px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl'>
           Rekomendasi ini dibuat oleh AI berdasarkan pola data harianmu. Bukan diagnosis medis.
         </div>
@@ -294,43 +128,50 @@ function RiwayatRow({ entry, prevEntry, isExpanded, onToggle }) {
           : 'bg-white border-slate-100 hover:border-teal-200 hover:shadow-sm'
       }`}
     >
-      {/* Row header */}
       <button
         onClick={onToggle}
         className='w-full flex items-center gap-3 px-5 py-4 text-left'
       >
-        {/* Dot */}
-        <StressDot color={entry.stress.color} />
+        <StressDot color={entry.stress?.color} />
 
-        {/* Date */}
         <div className='flex flex-col min-w-[90px]'>
-          <span className='text-xs font-mono text-slate-600'>{entry.date}</span>
-          <span className='text-[11px] text-slate-400 mt-0.5'>{entry.dayName}</span>
+          <span className='text-xs font-mono text-slate-600'>{entry.date ?? '-'}</span>
+          <span className='text-[11px] text-slate-400 mt-0.5'>{entry.dayName ?? ''}</span>
         </div>
 
-        {/* Tags */}
+        {/* Tags — desktop */}
         <div className='hidden sm:flex flex-wrap gap-2 flex-1'>
-          <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
-          <Tag color={entry.sleep.color}>Tidur: {entry.sleep.label}</Tag>
-          <Tag color={entry.mood.color}>Mood: {entry.mood.score}/10</Tag>
+          {entry.stress ? (
+            <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
+          ) : (
+            <Tag color='slate'>Stress: -</Tag>
+          )}
+          {entry.sleep ? (
+            <Tag color={entry.sleep.color}>Tidur: {entry.sleep.label}</Tag>
+          ) : null}
+          {entry.mood ? (
+            <Tag color={entry.mood.color}>Mood: {entry.mood.score}/10</Tag>
+          ) : null}
         </div>
-        {/* Tags mobile */}
+
+        {/* Tags — mobile */}
         <div className='flex sm:hidden flex-col gap-1 flex-1'>
-          <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
+          {entry.stress ? (
+            <Tag color={entry.stress.color}>Stress: {entry.stress.label}</Tag>
+          ) : (
+            <Tag color='slate'>Stress: -</Tag>
+          )}
         </div>
 
-        {/* Mood trend vs previous */}
         <div className='flex items-center gap-1.5'>
-          <MoodTrend current={entry.mood.score} prev={prevEntry?.mood.score} />
+          <MoodTrend current={entry.mood?.score} prev={prevEntry?.mood?.score} />
         </div>
 
-        {/* Expand icon */}
-        <div className={`text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-0' : ''}`}>
+        <div className='text-slate-400'>
           {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
         </div>
       </button>
 
-      {/* Expanded detail */}
       {isExpanded && (
         <div className='px-5 pb-5'>
           <ExpandedDetail entry={entry} />
@@ -341,28 +182,30 @@ function RiwayatRow({ entry, prevEntry, isExpanded, onToggle }) {
 }
 
 /* ─────────────────────────────────────────────
-   Stat Card Component
+   Stat Card
 ───────────────────────────────────────────── */
 
 function StatCard({ label, value, sub, color = 'slate' }) {
   const valColor = {
-    teal: 'text-teal-500',
+    teal:  'text-teal-500',
     amber: 'text-amber-500',
-    red: 'text-red-500',
+    red:   'text-red-500',
     slate: 'text-slate-700',
   }[color]
 
   return (
     <div className='bg-white border border-slate-100 rounded-2xl p-5 text-center shadow-sm'>
       <div className='text-[10px] font-mono text-slate-400 tracking-widest mb-2'>{label}</div>
-      <div className={`text-3xl font-bold leading-none mb-1.5 ${valColor}`}>{value}</div>
+      <div className={`text-3xl font-bold leading-none mb-1.5 ${valColor}`}>
+        {value ?? <span className='text-slate-300'>-</span>}
+      </div>
       {sub && <div className='text-xs text-slate-400'>{sub}</div>}
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────
-   Mini Bar Chart Component
+   Mini Bar Chart
 ───────────────────────────────────────────── */
 
 function MiniBarChart({ data, empty = false }) {
@@ -375,7 +218,6 @@ function MiniBarChart({ data, empty = false }) {
     )
   }
 
-  const max = 4
   const barColor = (level) => {
     if (level >= 3) return 'bg-red-400/70'
     if (level === 2) return 'bg-amber-400/70'
@@ -388,9 +230,11 @@ function MiniBarChart({ data, empty = false }) {
         <div key={i} className='flex flex-col items-center gap-1 flex-1'>
           <div
             className={`w-full rounded-t-md transition-all ${barColor(d.level)}`}
-            style={{ height: `${(d.level / max) * 100}%`, minHeight: 4 }}
+            style={{ height: `${(d.level / 4) * 100}%`, minHeight: 4 }}
           />
-          <span className='text-[9px] font-mono text-slate-600'>{d.dateShort.slice(0, 2)}</span>
+          <span className='text-[9px] font-mono text-slate-600'>
+            {d.dateShort?.slice(0, 2) ?? ''}
+          </span>
         </div>
       ))}
     </div>
@@ -398,45 +242,7 @@ function MiniBarChart({ data, empty = false }) {
 }
 
 /* ─────────────────────────────────────────────
-   Custom hook untuk fetch riwayat data
-───────────────────────────────────────────── */
-
-function useRiwayatData() {
-  const [data, setData] = useState(undefined)
-  const [chartData, setChartData] = useState(undefined)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  const fetchData = () => {
-    setLoading(true)
-    setError(null)
-    
-    // TODO: uncomment ketika backend sudah siap
-    // getRiwayat({ limit: 30 })
-    //   .then((res) => setData(res.data.data))
-    //   .catch((err) => {
-    //     setError(err.message)
-    //     setData(null)
-    //   })
-    //   .finally(() => setLoading(false))
-    
-    // Simulasi sementara — hapus setTimeout ini ketika backend sudah siap
-    setTimeout(() => {
-      setData(null)
-      setChartData(null)
-      setLoading(false)
-    }, 1500)
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  return { data, chartData, loading, error, refetch: fetchData }
-}
-
-/* ─────────────────────────────────────────────
-   Filter Chip Component
+   Filter Chip
 ───────────────────────────────────────────── */
 
 function FilterChip({ label, active, onClick }) {
@@ -455,57 +261,96 @@ function FilterChip({ label, active, onClick }) {
 }
 
 /* ─────────────────────────────────────────────
+   Custom hook — fetch data
+   TODO: hapus simulasi & uncomment API call
+         ketika backend sudah siap
+───────────────────────────────────────────── */
+
+function useRiwayatData() {
+  const [entries, setEntries]     = useState(null)   // null = belum ada data
+  const [chartData, setChartData] = useState(null)
+  const [stats, setStats]         = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
+
+  const fetchData = () => {
+    setLoading(true)
+    setError(null)
+
+    // ── TODO: Uncomment blok ini ketika backend sudah siap ──────────────────
+    // Promise.all([
+    //   getRiwayat({ limit: 30 }),
+    //   getRiwayatChart('minggu'),
+    // ])
+    //   .then(([riwayatRes, chartRes]) => {
+    //     const payload = riwayatRes.data.data
+    //     setEntries(payload?.entries ?? null)
+    //     setStats(payload?.stats ?? null)
+    //     setChartData(chartRes.data.data ?? null)
+    //   })
+    //   .catch((err) => {
+    //     setError(err.message)
+    //   })
+    //   .finally(() => setLoading(false))
+    // ────────────────────────────────────────────────────────────────────────
+
+    // Simulasi sementara — hapus blok ini ketika backend sudah siap
+    setTimeout(() => {
+      setEntries(null)
+      setChartData(null)
+      setStats(null)
+      setLoading(false)
+    }, 800)
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  return { entries, chartData, stats, loading, error, refetch: fetchData }
+}
+
+/* ─────────────────────────────────────────────
    Main Component
 ───────────────────────────────────────────── */
 
+const STRESS_FILTERS = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
+
 export default function RiwayatPage() {
-  const { data, chartData: apiChartData, loading } = useRiwayatData()
-  const [expandedId, setExpandedId] = useState(null)
-  const [search, setSearch] = useState('')
+  const { entries, chartData, stats, loading } = useRiwayatData()
+  const [expandedId, setExpandedId]   = useState(null)
+  const [search, setSearch]           = useState('')
   const [filterStress, setFilterStress] = useState('Semua')
 
-  const stressFilters = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
+  /* Filter hanya jalan kalau ada data */
+  const filtered = entries
+    ? entries.filter((e) => {
+        const matchSearch =
+          (e.date ?? '').toLowerCase().includes(search.toLowerCase()) ||
+          (e.dayName ?? '').toLowerCase().includes(search.toLowerCase())
+        const matchFilter =
+          filterStress === 'Semua' || e.stress?.label === filterStress
+        return matchSearch && matchFilter
+      })
+    : []
 
-  // Gunakan data dari API jika ada, jika tidak gunakan dummy
-  const riwayatData = data?.entries || riwayatDataDummy
-  const stats = data?.stats
-
-  const filtered = riwayatData.filter((e) => {
-    const matchSearch =
-      e.date.toLowerCase().includes(search.toLowerCase()) ||
-      e.dayName.toLowerCase().includes(search.toLowerCase())
-    const matchFilter = filterStress === 'Semua' || e.stress.label === filterStress
-    return matchSearch && matchFilter
-  })
-
-  const avgStress = stats?.avgStress ?? (
-    riwayatData.reduce((s, e) => s + e.stress.level, 0) / riwayatData.length
-  ).toFixed(1)
-
-  const totalLog = stats?.totalLog ?? riwayatData.length
-  const streak = stats?.streak ?? '-'
-  const logWeek = stats?.logWeek ?? '-'
-
-  const chartData = apiChartData || (
-    [...riwayatData]
-      .reverse()
-      .slice(-7)
-      .map((e) => ({ level: e.stress.level, dateShort: e.dateShort }))
-  )
+  /* Stat values — '-' selama belum ada data dari backend */
+  const totalLog  = stats?.totalLog  ?? '-'
+  const avgStress = stats?.avgStress ?? '-'
+  const streak    = stats?.streak    ?? '-'
+  const logWeek   = stats?.logWeek   ?? '-'
 
   return (
     <MainLayout title='Riwayat Log'>
-      <div className='max-w-3xl mx-auto px-0 md:px-0'>
+      <div className='max-w-3xl mx-auto'>
 
-        {/* ── Stats row ── */}
+        {/* ── Stat cards ── */}
         <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
-          <StatCard label='TOTAL LOG' value={totalLog} sub='Sejak bergabung' color='slate' />
-          <StatCard label='RATA-RATA STRESS' value={avgStress} sub='Level (PSS-based)' color='amber' />
-          <StatCard label='STREAK' value={streak} sub='Hari berturut-turut 🔥' color='teal' />
-          <StatCard label='LOG MINGGU INI' value={logWeek} sub='Hari tercatat' color='slate' />
+          <StatCard label='TOTAL LOG'        value={totalLog}  sub='Sejak bergabung'          color='slate' />
+          <StatCard label='RATA-RATA STRESS' value={avgStress} sub='Level (PSS-based)'         color='amber' />
+          <StatCard label='STREAK'           value={streak}    sub='Hari berturut-turut 🔥'    color='teal' />
+          <StatCard label='LOG MINGGU INI'   value={logWeek}   sub='Hari tercatat'             color='slate' />
         </div>
 
-        {/* ── Trend mini chart ── */}
+        {/* ── Trend chart ── */}
         <div className='bg-white border border-slate-100 rounded-3xl p-5 mb-6 shadow-sm'>
           <div className='flex items-center justify-between mb-1'>
             <div className='text-sm font-semibold text-slate-700'>Tren Stress 7 Hari Terakhir</div>
@@ -514,7 +359,15 @@ export default function RiwayatPage() {
             </span>
           </div>
           <div className='text-xs text-slate-400 mb-1'>Level stress harian</div>
-          <MiniBarChart data={chartData} empty={!data} />
+
+          {loading ? (
+            <div className='h-40 flex items-center justify-center'>
+              <LuLoader size={24} className='text-slate-300 animate-spin' />
+            </div>
+          ) : (
+            <MiniBarChart data={chartData} empty={!chartData} />
+          )}
+
           <div className='flex gap-3 mt-3 flex-wrap'>
             {[
               { label: 'Rendah', cls: 'bg-teal-400' },
@@ -529,14 +382,16 @@ export default function RiwayatPage() {
           </div>
         </div>
 
-        {/* ── List header ── */}
+        {/* ── Log list ── */}
         <div className='bg-white/80 backdrop-blur border border-slate-100 shadow-xl shadow-teal-50 rounded-3xl p-6 md:p-7'>
 
-          {/* Title + search */}
+          {/* Header + search */}
           <div className='flex items-center justify-between gap-3 mb-4'>
             <div>
               <div className='text-base font-semibold text-slate-800'>Log Terakhir</div>
-              <div className='text-xs text-slate-400 mt-0.5'>{filtered.length} entri ditemukan</div>
+              <div className='text-xs text-slate-400 mt-0.5'>
+                {loading ? 'Memuat data…' : entries ? `${filtered.length} entri ditemukan` : 'Belum ada log'}
+              </div>
             </div>
             <div className='relative'>
               <LuSearch size={14} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
@@ -545,7 +400,8 @@ export default function RiwayatPage() {
                 placeholder='Cari tanggal…'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className='pl-8 pr-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-teal-400 w-40 transition-all'
+                disabled={!entries}
+                className='pl-8 pr-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-teal-400 w-40 transition-all disabled:opacity-40'
               />
               {search && (
                 <button
@@ -561,7 +417,7 @@ export default function RiwayatPage() {
           {/* Filter chips */}
           <div className='flex flex-wrap items-center gap-2 mb-5'>
             <LuFilter size={13} className='text-slate-400 flex-shrink-0' />
-            {stressFilters.map((f) => (
+            {STRESS_FILTERS.map((f) => (
               <FilterChip
                 key={f}
                 label={f}
@@ -571,12 +427,34 @@ export default function RiwayatPage() {
             ))}
           </div>
 
-          {filtered.length === 0 ? (
-            <div className='text-center py-12 text-slate-400'>
-              <LuCalendar size={32} className='mx-auto mb-3 opacity-40' />
-              <div className='text-sm'>Tidak ada log yang cocok</div>
+          {/* Content area */}
+          {loading ? (
+            /* Loading skeleton */
+            <div className='flex flex-col gap-2'>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className='h-[60px] rounded-2xl bg-slate-100 animate-pulse'
+                />
+              ))}
+            </div>
+          ) : !entries || filtered.length === 0 ? (
+            /* Empty state */
+            <div className='text-center py-14'>
+              <div className='w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4'>
+                <LuCalendar size={28} className='text-slate-300' />
+              </div>
+              <div className='text-sm font-medium text-slate-500 mb-1'>
+                {!entries ? 'Belum ada log tersimpan' : 'Tidak ada log yang cocok'}
+              </div>
+              <div className='text-xs text-slate-400'>
+                {!entries
+                  ? 'Mulai isi input harian pertamamu untuk melihat riwayat di sini.'
+                  : 'Coba ubah filter atau kata pencarian.'}
+              </div>
             </div>
           ) : (
+            /* Log rows */
             <div className='flex flex-col gap-2'>
               {filtered.map((entry, idx) => {
                 const prevEntry = filtered[idx + 1] ?? null
@@ -586,7 +464,9 @@ export default function RiwayatPage() {
                     entry={entry}
                     prevEntry={prevEntry}
                     isExpanded={expandedId === entry.id}
-                    onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                    onToggle={() =>
+                      setExpandedId(expandedId === entry.id ? null : entry.id)
+                    }
                   />
                 )
               })}
@@ -594,7 +474,6 @@ export default function RiwayatPage() {
           )}
 
         </div>
-
       </div>
     </MainLayout>
   )
