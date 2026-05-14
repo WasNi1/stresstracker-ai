@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { LuHeart, LuBrain, LuMoon, LuActivity, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX } from 'react-icons/lu'
+import { Link, useNavigate } from 'react-router-dom'
+import { LuHeart, LuBrain, LuMoon, LuActivity, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX, LuAlertCircle } from 'react-icons/lu'
 import { FcGoogle } from 'react-icons/fc'
+import axios from '../api/axios'
 
 function PasswordStrength({ password }) {
   const rules = [
@@ -29,7 +30,6 @@ function isPasswordValid(password) {
   return password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)
 }
 
-
 const features = [
   { icon: <LuBrain size={16} className='text-white' />, label: 'AI Stress Detection' },
   { icon: <LuMoon size={16} className='text-white' />, label: 'Sleep Quality Monitor' },
@@ -37,15 +37,75 @@ const features = [
 ]
 
 function Login() {
+  const navigate = useNavigate()
+  
+  // ========== STATE MANAGEMENT ==========
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const handleSubmit = (e) => {
+  // ========== HANDLE SUBMIT ==========
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
     setSubmitted(true)
-    if (!isPasswordValid(password)) return
-    // lanjut proses login
+
+    // Validate password format
+    if (!isPasswordValid(password)) {
+      return
+    }
+
+    // Validate email
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setError('Email harus valid')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      // API Call: POST /api/auth/login
+      const response = await axios.post('/api/auth/login', {
+        email: email.toLowerCase(),
+        password,
+      })
+
+      if (response.data.success) {
+        // Store token
+        localStorage.setItem('token', response.data.data.token)
+        
+        // Store user info if available
+        if (response.data.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.data.user))
+        }
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true })
+        }, 500)
+      }
+    } catch (err) {
+      console.error('Login error:', err)
+      
+      // Handle different error types
+      if (err.response?.status === 401) {
+        setError('Email atau password salah')
+      } else if (err.response?.status === 429) {
+        setError('Terlalu banyak percobaan login, coba lagi nanti')
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else if (err.message === 'Network Error') {
+        setError('Tidak bisa terhubung ke server. Cek koneksi internet Anda.')
+      } else {
+        setError('Login gagal, coba lagi nanti')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
+
   return (
     <div className='min-h-screen flex'>
       {/* Left Panel */}
@@ -98,7 +158,15 @@ function Login() {
             <h1 className='text-3xl font-bold text-slate-800'>Selamat datang</h1>
             <p className='text-slate-400 mt-2 text-sm'>Masuk untuk melanjutkan sesi stress trackermu</p>
 
-            <form className='mt-8 flex flex-col gap-4' onSubmit={handleSubmit}>
+            {/* Error Alert */}
+            {error && (
+              <div className='mt-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl'>
+                <LuAlertCircle size={18} className='text-red-500 flex-shrink-0 mt-0.5' />
+                <p className='text-sm text-red-700'>{error}</p>
+              </div>
+            )}
+
+            <form className={`mt-8 flex flex-col gap-4 ${error ? 'mt-4' : ''}`} onSubmit={handleSubmit}>
               <div className='flex flex-col gap-1.5'>
                 <label className='text-sm font-medium text-slate-600'>Email</label>
                 <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
@@ -106,7 +174,10 @@ function Login() {
                   <input
                     type='email'
                     placeholder='nama@email.com'
-                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50'
                   />
                 </div>
               </div>
@@ -122,7 +193,8 @@ function Login() {
                     placeholder='••••••••'
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
+                    disabled={loading}
+                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50'
                   />
                 </div>
                 <PasswordStrength password={password} />
@@ -130,7 +202,7 @@ function Login() {
 
               <div className='flex items-center justify-between text-sm mt-1'>
                 <label className='flex items-center gap-2 text-slate-500 cursor-pointer'>
-                  <input type='checkbox' className='accent-teal-500 w-4 h-4 rounded' />
+                  <input type='checkbox' className='accent-teal-500 w-4 h-4 rounded' disabled={loading} />
                   Ingat saya
                 </label>
                 <a href='#' className='text-teal-500 hover:text-teal-600 font-medium'>Lupa password?</a>
@@ -138,10 +210,24 @@ function Login() {
 
               <button
                 type='submit'
-                className='mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 rounded-2xl font-semibold shadow-lg shadow-teal-200 transition-all active:scale-[0.98]'
+                disabled={loading}
+                className={`mt-2 flex items-center justify-center gap-2 text-white py-4 rounded-2xl font-semibold shadow-lg transition-all active:scale-[0.98] ${
+                  loading
+                    ? 'bg-slate-400 cursor-not-allowed shadow-slate-200'
+                    : 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 shadow-teal-200'
+                }`}
               >
-                Masuk
-                <LuArrowRight size={16} />
+                {loading ? (
+                  <>
+                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                    Sedang masuk...
+                  </>
+                ) : (
+                  <>
+                    Masuk
+                    <LuArrowRight size={16} />
+                  </>
+                )}
               </button>
 
               <div className='flex items-center gap-3 my-1'>
@@ -152,7 +238,8 @@ function Login() {
 
               <button
                 type='button'
-                className='flex items-center justify-center gap-3 w-full border border-slate-200 bg-white hover:bg-slate-50 py-3.5 rounded-2xl font-medium text-slate-600 text-sm transition-all active:scale-[0.98] shadow-sm'
+                disabled={loading}
+                className='flex items-center justify-center gap-3 w-full border border-slate-200 bg-white hover:bg-slate-50 py-3.5 rounded-2xl font-medium text-slate-600 text-sm transition-all active:scale-[0.98] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed'
               >
                 <FcGoogle size={20} />
                 Masuk dengan Google
