@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import {  Link } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom'
 import {
   LuHeart,
   LuBrain,
@@ -52,6 +52,7 @@ const features = [
 ]
 
 function Register () {
+  const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -60,6 +61,7 @@ function Register () {
     setSubmitted(true)
     if (!isPasswordValid(password)) return
     // lanjut proses register
+    navigate('/', { replace: true })
   }
     return (
         <div className='min-h-screen flex'>
