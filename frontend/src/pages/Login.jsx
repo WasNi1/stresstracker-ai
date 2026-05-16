@@ -81,9 +81,9 @@ function Login() {
           localStorage.setItem('user', JSON.stringify(response.data.data.user))
         }
 
-        // Redirect to dashboard
+        // Redirect to dashboard halaman utama
         setTimeout(() => {
-          navigate('/dashboard', { replace: true })
+          navigate('/', { replace: true })
         }, 500)
       }
     } catch (err) {
