@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   LuBell,
   LuShield,
@@ -118,6 +119,7 @@ function PasswordModal({ onClose }) {
 }
 
 export default function Settings() {
+  const navigate = useNavigate()
   const [showDelete, setShowDelete] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [reminderHour, setReminderHour] = useState('20:00')
@@ -197,7 +199,7 @@ export default function Settings() {
           <SettingsItem
             label='Keluar dari akun' sub='Sesi kamu akan diakhiri'
             right={
-              <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
+              <button onClick={() => navigate('/login')} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
                 <LuLogOut size={12} />Logout
               </button>
             }
