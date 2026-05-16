@@ -161,7 +161,6 @@ function Login() {
             {/* Error Alert */}
             {error && (
               <div className='mt-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl'>
-                <LuAlertCircle size={18} className='text-red-500 flex-shrink-0 mt-0.5' />
                 <p className='text-sm text-red-700'>{error}</p>
               </div>
             )}
