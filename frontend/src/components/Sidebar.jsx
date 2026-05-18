@@ -4,7 +4,6 @@ import {
   LuClipboardList,
   LuHistory,
   LuLightbulb,
-  LuTrendingUp,
   LuUser,
   LuSettings,
   LuBrainCircuit,
