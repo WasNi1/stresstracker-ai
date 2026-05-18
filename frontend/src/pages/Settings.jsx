@@ -145,30 +145,6 @@ export default function Settings() {
               </select>
             }
           />
-          <SettingsItem label='Alert stress tinggi' sub='Notif jika stress mencapai level 3–4' right={<Toggle defaultOn />} />
-          <SettingsItem label='Ringkasan mingguan' sub='Laporan performa setiap Minggu pagi' right={<Toggle defaultOn />} />
-        </SectionCard>
-
-        {/* Privasi & Data */}
-        <SectionCard title='PRIVASI & DATA' icon={LuShield}>
-          <SettingsItem label='Data anonim untuk riset' sub='Bantu tingkatkan akurasi model AI kami' right={<Toggle />} />
-          <SettingsItem
-            label='Export data saya'
-            sub='Unduh semua log dalam format CSV'
-            right={
-              <button className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:border-teal-400 hover:text-teal-500 transition-all'>
-                <LuDownload size={12} />Export
-              </button>
-            }
-          />
-          <SettingsItem
-            label='Hapus semua data' sub='Tindakan ini tidak bisa dibatalkan' subRed
-            right={
-              <button onClick={() => setShowDelete(true)} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
-                <LuTrash2 size={12} />Hapus
-              </button>
-            }
-          />
         </SectionCard>
 
         {/* Tampilan */}
