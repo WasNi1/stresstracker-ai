@@ -48,7 +48,6 @@ function isPasswordValid(password) {
 const features = [
   { icon: <LuBrain size={16} className='text-white' />, label: 'AI Stress Detection' },
   { icon: <LuMoon size={16} className='text-white' />, label: 'Sleep Quality Monitor' },
-  { icon: <LuActivity size={16} className='text-white' />, label: 'Daily Wellness Tracker' },
 ]
 
 function Register () {
