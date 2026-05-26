@@ -148,43 +148,36 @@ function SectionTitle({ children, sub }) {
 
 const steps = [
   {
-    icon: '😴',
-    label: '1 / 6 — Tidur semalam',
+    label: '1 / 6 — Tidur',
     badge: 'Tidur',
     BadgeIcon: LuMoon,
   },
   {
-    icon: '🧠',
-    label: '2 / 6 — Perasaan hari ini',
-    badge: 'Perasaan',
-    BadgeIcon: LuBrain,
-  },
-  {
-    icon: '🏃',
-    label: '3 / 6 — Aktivitas fisik',
-    badge: 'Aktivitas',
-    BadgeIcon: LuDumbbell,
-  },
-  {
-    icon: '🍽️',
-    label: '4 / 6 — Gaya hidup',
+    label: '2 / 6 — Gaya Hidup',
     badge: 'Gaya Hidup',
     BadgeIcon: LuUtensils,
   },
   {
-    icon: '📱',
-    label: '5 / 6 — Gadget & kerja',
-    badge: 'Gadget & Kerja',
+    label: '3 / 6 — Layar & Kerja',
+    badge: 'Layar & Kerja',
     BadgeIcon: LuSmartphone,
   },
   {
-    icon: '🤝',
-    label: '6 / 6 — Sosial & relaksasi',
+    label: '4 / 6 — Pekerjaan & Aktivitas',
+    badge: 'Pekerjaan',
+    BadgeIcon: LuActivity,
+  },
+  {
+    label: '5 / 6 — Suasana Hati',
+    badge: 'Suasana Hati',
+    BadgeIcon: LuBrain,
+  },
+  {
+    label: '6 / 6 — Sosial & Relaksasi',
     badge: 'Sosial',
     BadgeIcon: LuUsers,
   },
   {
-    icon: '✅',
     label: 'Hasil prediksi',
     badge: 'Hasil',
   },
@@ -194,160 +187,106 @@ const steps = [
    Konten tiap step
 ───────────────────────────────────────────── */
 
+// Step 1 — Tidur (kolom: durasi_tidur_menit, sering_terbangun_malam, mimpi_buruk)
 function Step1() {
   return (
     <>
-      <SectionTitle sub='Geser sesuai durasi tidurmu'>Semalam tidur berapa jam?</SectionTitle>
-      <Slider id='slp' min={2} max={12} step={0.5} defaultValue={7} unit=' jam' />
-
-      <SectionTitle>Gimana kualitas tidurmu?</SectionTitle>
-      <RatingRow
-        id='sq'
-        options={['😩', '😔', '😐', '😊', '😄']}
-        leftLabel='Sangat buruk'
-        rightLabel='Sangat nyenyak'
-      />
+      <SectionTitle sub='Geser sesuai durasi tidur semalam'>
+        Durasi tidur semalam
+      </SectionTitle>
+      <Slider min={0} max={1440} step={30} defaultValue={420} unit=' menit' />
 
       <div className='mt-2'>
-        <YesNo label='Kebangun tengah malam?' />
-        <YesNo label='Ada mimpi buruk? (opsional)' />
+        <YesNo label='Sering terbangun saat tidur malam?' />
+        <YesNo label='Mengalami mimpi buruk?' />
       </div>
     </>
   )
 }
 
+// Step 2 — Gaya Hidup (kolom: minum_kopi_hari_ini, merokok, konsumsi_alkohol)
 function Step2() {
   return (
     <>
-      <SectionTitle>Mood kamu hari ini?</SectionTitle>
-      <Slider id='md' min={1} max={10} defaultValue={6} unit='/10' />
-
-      <SectionTitle>Seberapa cemas?</SectionTitle>
-      <RatingRow id='ax' options={[1, 2, 3, 4, 5]} leftLabel='Tidak cemas' rightLabel='Sangat cemas' />
-
-      <SectionTitle>Energi hari ini?</SectionTitle>
-      <RatingRow id='en' options={['🪫', '😴', '😐', '⚡', '🔥']} leftLabel='Sangat loyo' rightLabel='Sangat bertenaga' />
-
-      <SectionTitle>
-        Ngerasa apa?{' '}
-        <span className='text-sm font-normal text-slate-500'>(pilih semua yang sesuai)</span>
-      </SectionTitle>
-      <ChipGroup multi options={['Senang', 'Tenang', 'Excited', 'Sedih', 'Cemas', 'Marah', 'Lelah', 'Bosan']} />
+      <SectionTitle>Konsumsi pada hari ini</SectionTitle>
+      <div className='mt-2'>
+        <YesNo label='Mengonsumsi kopi pada hari ini?' />
+        <YesNo label='Merokok?' />
+        <YesNo label='Mengonsumsi alkohol pada hari ini?' />
+      </div>
     </>
   )
 }
 
+// Step 3 — Layar & Kerja (kolom: screen_sebelum_tidur, jam_kerja_menit, deadline_hari_ini, lembur)
 function Step3() {
-  const [olahraga, setOlahraga] = useState(null)
   return (
     <>
-      <SectionTitle>Olahraga hari ini?</SectionTitle>
-      <div className='flex gap-3 mb-5'>
-        <button
-          onClick={() => setOlahraga(true)}
-          className={`px-4 py-2 rounded-full border text-sm transition-all ${
-            olahraga === true
-              ? 'bg-teal-500 border-teal-500 text-white'
-              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
-          }`}
-        >
-          Ya, olahraga
-        </button>
-        <button
-          onClick={() => setOlahraga(false)}
-          className={`px-4 py-2 rounded-full border text-sm transition-all ${
-            olahraga === false
-              ? 'bg-teal-500 border-teal-500 text-white'
-              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
-          }`}
-        >
-          Tidak hari ini
-        </button>
-      </div>
-
-      {olahraga && (
-        <div className='bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-5'>
-          <div className='text-sm font-medium text-slate-600 mb-2'>Jenis olahraga?</div>
-          <ChipGroup options={['Lari', 'Gym', 'Yoga', 'Renang', 'Sepeda', 'Jalan kaki', 'Badminton']} />
-          <div className='text-sm font-medium text-slate-600 mb-2'>Berapa lama?</div>
-          <Slider id='ed' min={5} max={120} defaultValue={30} unit=' menit' />
-          <div className='text-sm font-medium text-slate-600 mb-2'>Intensitas</div>
-          <ChipGroup options={['Ringan', 'Sedang', 'Berat']} />
-        </div>
-      )}
-
-      <SectionTitle>
-        Perkiraan langkah kaki?{' '}
-        <span className='text-sm font-normal text-slate-500'>(boleh skip)</span>
+      <SectionTitle sub='Durasi penggunaan layar (HP/laptop) sebelum tidur semalam'>
+        Screen time sebelum tidur
       </SectionTitle>
-      <Slider id='st' min={0} max={20000} step={500} defaultValue={6000} unit=' langkah' />
+      <Slider min={0} max={1440} step={10} defaultValue={30} unit=' menit' />
+
+      <SectionTitle sub='Total jam kerja atau belajar hari ini'>
+        Jam kerja / belajar hari ini
+      </SectionTitle>
+      <Slider min={0} max={1440} step={30} defaultValue={480} unit=' menit' />
+
+      <div className='mt-2'>
+        <YesNo label='Ada deadline pekerjaan / tugas hari ini?' />
+        <YesNo label='Bekerja melebihi jam normal (lembur)?' />
+      </div>
     </>
   )
 }
 
+// Step 4 — Pekerjaan & Aktivitas (kolom: pekerjaan, waktu_outdoor, aktivitas_hobi)
 function Step4() {
   return (
     <>
-      <SectionTitle>Kopi / teh hari ini?</SectionTitle>
-      <Slider id='cf' min={0} max={5} defaultValue={1} unit=' gelas' />
+      <SectionTitle>Pekerjaan</SectionTitle>
+      <ChipGroup options={['Dokter', 'Freelancer', 'Guru', 'IRT', 'Karyawan', 'Mahasiswa', 'Wirausaha']} />
 
-      <SectionTitle>Air putih?</SectionTitle>
-      <Slider id='wa' min={0} max={5} step={0.5} defaultValue={2} unit=' liter' />
-
-      <SectionTitle>Kualitas makan hari ini?</SectionTitle>
-      <RatingRow id='fq' options={[1, 2, 3, 4, 5]} leftLabel='Sangat buruk' rightLabel='Sangat bergizi' />
+      <SectionTitle sub='Durasi waktu di luar ruangan hari ini'>
+        Waktu di luar ruangan
+      </SectionTitle>
+      <Slider min={0} max={1440} step={10} defaultValue={60} unit=' menit' />
 
       <div className='mt-2'>
-        <YesNo label='Konsumsi alkohol hari ini?' />
-        <YesNo label='Merokok hari ini?' />
+        <YesNo label='Melakukan aktivitas hobi hari ini?' />
       </div>
     </>
   )
 }
 
+// Step 5 — Suasana Hati & Kecemasan (kolom: suasana_hati, tingkat_kecemasan)
 function Step5() {
   return (
     <>
-      <SectionTitle>Total screen time hari ini?</SectionTitle>
-      <Slider id='sc' min={0} max={16} defaultValue={7} unit=' jam' />
+      <SectionTitle>Suasana hati secara umum hari ini</SectionTitle>
+      <ChipGroup options={['Positif', 'Negatif', 'Netral', 'Campur']} />
 
-      <SectionTitle>Main HP sebelum tidur semalam?</SectionTitle>
-      <Slider id='sb' min={0} max={120} defaultValue={30} unit=' menit' />
-
-      <SectionTitle>Beban kerja / belajar hari ini?</SectionTitle>
-      <RatingRow id='wl' options={['😌', '🙂', '😐', '😓', '🤯']} leftLabel='Sangat ringan' rightLabel='Sangat berat' />
-
-      <div className='mt-2'>
-        <YesNo label='Scrolling sosmed tanpa tujuan?' />
-        <YesNo label='Lembur / kerja di luar jam normal?' />
-        <YesNo label='Ada deadline mendesak?' />
-      </div>
+      <SectionTitle sub='Skor kecemasan yang dirasakan hari ini (self-report)'>
+        Tingkat kecemasan
+      </SectionTitle>
+      <RatingRow
+        options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+        leftLabel='Tidak cemas'
+        rightLabel='Sangat cemas'
+      />
     </>
   )
 }
 
+// Step 6 — Sosial & Relaksasi (kolom: konflik_interpersonal, merasa_kesepian, meditasi)
 function Step6() {
   return (
     <>
-      <SectionTitle>Interaksi sosial hari ini?</SectionTitle>
-      <RatingRow id='ss' options={[1, 2, 3, 4, 5]} leftLabel='Tidak ada' rightLabel='Sangat banyak' />
-
+      <SectionTitle>Sosial & relaksasi hari ini</SectionTitle>
       <div className='mt-2'>
-        <YesNo label='Ada konflik dengan orang lain?' />
-        <YesNo label='Ngerasa kesepian?' />
-        <YesNo label='Sempat meditasi / napas dalam?' />
-        <YesNo label='Lakukan hobi yang kamu suka?' />
-        <div className='flex justify-between items-center py-3'>
-          <span className='text-sm text-slate-600'>
-            Waktu di luar ruangan{' '}
-            <span className='text-xs text-slate-400'>(menit, opsional)</span>
-          </span>
-          <input
-            type='number'
-            placeholder='mnt'
-            className='w-16 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-mono text-sm focus:outline-none focus:border-teal-400'
-          />
-        </div>
+        <YesNo label='Terjadi konflik / pertengkaran dengan orang lain?' />
+        <YesNo label='Merasa kesepian hari ini?' />
+        <YesNo label='Melakukan meditasi hari ini?' />
       </div>
     </>
   )
@@ -356,7 +295,6 @@ function Step6() {
 function StepResult({ onReset }) {
   return (
     <>
-      {/* Hero */}
       <div className='bg-teal-50 border border-teal-200 rounded-2xl p-6 text-center mb-5'>
         <div className='text-xs font-mono text-teal-500 mb-2 tracking-widest'>STRESS LEVEL HARI INI</div>
         <div className='text-5xl font-bold text-teal-600 leading-none mb-2'>Sedang</div>
@@ -370,17 +308,17 @@ function StepResult({ onReset }) {
           <div className='text-xs text-slate-400 mt-1'>Level 3 / 4 (PSQI)</div>
         </div>
         <div className='bg-teal-50 border border-teal-100 rounded-xl p-4 text-center'>
-          <div className='text-xs font-mono text-slate-400 mb-2'>MOOD</div>
-          <div className='text-xl font-bold text-teal-500'>6 / 10</div>
+          <div className='text-xs font-mono text-slate-400 mb-2'>SUASANA HATI</div>
+          <div className='text-xl font-bold text-teal-500'>Positif</div>
           <div className='text-xs text-slate-400 mt-1'>Di atas rata-rata</div>
         </div>
       </div>
 
-      <div className='text-sm font-medium text-slate-600 mb-3'>Rekomendasi AI untuk besok</div>
+      <div className='text-sm font-medium text-slate-600 mb-3'>Rekomendasi untuk besok</div>
       {[
-        '📱 Matikan HP minimal 30 menit sebelum tidur.',
-        '☕ Batasi kafein setelah jam 14.00.',
-        '🧘 Pertahankan rutinitas olahragamu.',
+        'Matikan HP minimal 30 menit sebelum tidur.',
+        'Batasi kafein setelah jam 14.00.',
+        'Pertahankan aktivitas hobi dan waktu di luar ruangan.',
       ].map((r, i) => (
         <div key={i} className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed mb-2'>
           {r}
@@ -395,7 +333,7 @@ function StepResult({ onReset }) {
         onClick={onReset}
         className='w-full mt-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold text-sm transition-all active:scale-[0.98]'
       >
-        Lihat dashboard →
+        Lihat dashboard
       </button>
     </>
   )
@@ -410,7 +348,7 @@ const TOTAL_STEPS = steps.length // 7 including hasil
 
 function DailyInput() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [animDir, setAnimDir] = useState(null) // 'left' | 'right'
+  const [animDir, setAnimDir] = useState(null)
   const [visible, setVisible] = useState(true)
   const isResult = currentStep >= TOTAL_STEPS - 1
 
@@ -426,7 +364,7 @@ function DailyInput() {
     }, 180)
   }
 
-  const segCount = TOTAL_STEPS - 1 // bar = 6 segmen (langkah 1–6, hasil tidak dihitung)
+  const segCount = TOTAL_STEPS - 1
 
   return (
     <MainLayout title='Input Harian'>
@@ -465,7 +403,7 @@ function DailyInput() {
           >
             {/* Step label */}
             <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>
-              {steps[currentStep].icon} {steps[currentStep].label}
+              {steps[currentStep].label}
             </div>
 
             {/* Step content */}
@@ -499,7 +437,7 @@ function DailyInput() {
                 onClick={() => navigate(1)}
                 className='flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 text-sm font-semibold transition-all active:scale-[0.97]'
               >
-                {currentStep === segCount - 1 ? 'Lihat hasil →' : 'Lanjut →'}
+                {currentStep === segCount - 1 ? 'Lihat hasil' : 'Lanjut'}
                 <LuChevronRight size={16} />
               </button>
             </div>
