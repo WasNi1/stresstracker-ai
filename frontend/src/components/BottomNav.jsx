@@ -10,7 +10,7 @@ import {
 const navItems = [
   { to: '/',             icon: <LuLayoutDashboard size={20} />, label: 'Home' },
   { to: '/input-harian', icon: <LuClipboardList size={20} />,  label: 'Input' },
-  { to: '/riwayat',      icon: <LuHistory size={20} />,        label: 'Riwayat' },
+  // { to: '/riwayat',      icon: <LuHistory size={20} />,        label: 'Riwayat' },
   { to: '/profile',      icon: <LuUser size={20} />,           label: 'Profil' },
 ]
 
