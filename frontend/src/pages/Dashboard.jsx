@@ -301,7 +301,7 @@ function Dashboard() {
         {/* Greeting */}
         <div className='mb-6'>
           <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>{getGreeting()}</h1>
-          <p className='text-slate-400 mt-1.5 text-sm'>Pantau kesehatan mental dan tidur harianmu.</p>
+          <p className='text-slate-400 mt-1.5 text-sm'>Pantau kesehatan mental harianmu</p>
         </div>
 
         {/* 1. Stress level hari ini */}
