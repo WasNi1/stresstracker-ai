@@ -288,7 +288,7 @@ function DailyInput() {
 
             {/* Durasi otomatis */}
             <div className={`rounded-xl px-4 py-3 mb-4 flex items-center justify-between ${durasi !== null ? 'bg-teal-50 border border-teal-100' : 'bg-slate-50 border border-slate-100'}`}>
-              <span className='text-xs text-slate-500'>durasi_tidur_menit (otomatis)</span>
+              <span className='text-xs text-slate-500'>durasi tidur (otomatis)</span>
               <span className={`text-sm font-semibold ${durasi !== null ? 'text-teal-600' : 'text-slate-400'}`}>
                 {durasi !== null ? menitKeJam(durasi) : 'Isi jam tidur & bangun'}
               </span>
