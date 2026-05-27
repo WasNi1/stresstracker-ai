@@ -194,41 +194,6 @@ function Register () {
                 </div>
               </div>
 
-              {/* Tinggi & Berat */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Tinggi badan (cm)
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuRuler size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='number'
-                      placeholder='170'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Berat badan (kg)
-                  </label>
-
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuWeight size={16} className='text-slate-300 shrink-0' />
-
-                    <input
-                      type='number'
-                      placeholder='65'
-                      className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full'
-                    />
-                  </div>
-                </div>
-              </div>
-
               {/* Pekerjaan & Aktivitas */}
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='flex flex-col gap-1.5'>
@@ -251,18 +216,6 @@ function Register () {
                       <option>Wirausaha</option>
                     </select>
                   </div>
-                </div>
-
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Level aktivitas
-                  </label>
-
-                  <select className='bg-slate-50 border border-slate-200 focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all outline-none text-sm text-slate-700'>
-                    <option>Rendah</option>
-                    <option>Sedang</option>
-                    <option>Tinggi</option>
-                  </select>
                 </div>
               </div>
 
