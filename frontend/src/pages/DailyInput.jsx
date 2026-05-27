@@ -213,14 +213,56 @@ const INIT = {
 }
 
 /* ─────────────────────────────────
+   Validasi semua field required
+─────────────────────────────────── */
+function validate(form, durasi) {
+  const errors = {}
+
+  // Pola & kualitas tidur
+  if (!form.jam_mulai_tidur) errors.jam_mulai_tidur = 'Jam mulai tidur wajib diisi'
+  if (!form.jam_bangun) errors.jam_bangun = 'Jam bangun wajib diisi'
+  if (form.sering_terbangun_malam === null) errors.sering_terbangun_malam = 'Wajib diisi'
+  if (form.mimpi_buruk === null) errors.mimpi_buruk = 'Wajib diisi'
+  // screen_sebelum_tidur punya default 30, selalu valid
+
+  // Konsumsi zat & substansi
+  if (form.minum_kopi_hari_ini === null) errors.minum_kopi_hari_ini = 'Wajib diisi'
+  if (form.merokok === null) errors.merokok = 'Wajib diisi'
+  if (form.konsumsi_alkohol === null) errors.konsumsi_alkohol = 'Wajib diisi'
+
+  // Beban & tekanan kerja
+  if (form.deadline_hari_ini === null) errors.deadline_hari_ini = 'Wajib diisi'
+  if (form.lembur === null) errors.lembur = 'Wajib diisi'
+  if (form.konsentrasi === null) errors.konsentrasi = 'Wajib diisi'
+
+  // Kondisi hubungan sosial
+  if (form.suasana_hati === null) errors.suasana_hati = 'Wajib diisi'
+  if (form.konflik_interpersonal === null) errors.konflik_interpersonal = 'Wajib diisi'
+  if (form.merasa_kesepian === null) errors.merasa_kesepian = 'Wajib diisi'
+  if (form.interaksi_sosial === null) errors.interaksi_sosial = 'Wajib diisi'
+
+  // Aktivitas pemulihan diri
+  if (form.meditasi === null) errors.meditasi = 'Wajib diisi'
+  if (form.aktivitas_hobi === null) errors.aktivitas_hobi = 'Wajib diisi'
+  // waktu_outdoor punya default 30, selalu valid
+
+  return errors
+}
+
+/* ─────────────────────────────────
    Main
 ─────────────────────────────────── */
 function DailyInput() {
   const navigate = useNavigate()
   const [form, setForm] = useState(INIT)
   const [submitted, setSubmitted] = useState(false)
+  const [errors, setErrors] = useState({})
 
-  const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }))
+  const set = (key) => (val) => {
+    setForm((f) => ({ ...f, [key]: val }))
+    // hapus error field ini saat user mengisi
+    if (errors[key]) setErrors((e) => { const n = { ...e }; delete n[key]; return n })
+  }
 
   const durasi = useMemo(
     () => hitungDurasiTidur(form.jam_mulai_tidur, form.jam_bangun),
@@ -228,6 +270,15 @@ function DailyInput() {
   )
 
   const handleSubmit = () => {
+    const errs = validate(form, durasi)
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      // scroll ke error pertama
+      const firstKey = Object.keys(errs)[0]
+      document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+
     const tanggal = new Date().toISOString().split('T')[0]
     const durasi_tidur_menit = durasi ?? 0
     const stress = hitungStress({ ...form, durasi_tidur_menit })
