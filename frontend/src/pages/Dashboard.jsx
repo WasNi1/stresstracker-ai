@@ -14,6 +14,7 @@ import {
   LuClipboardList,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
+import { useApp } from '../context/AppContext'
 
 /* ─────────────────────────────────────────────
    Helpers
@@ -284,6 +285,7 @@ function WeeklyChart({ riwayat }) {
 ───────────────────────────────────────────── */
 function Dashboard() {
   const navigate = useNavigate()
+  const { user } = useApp()
   const [riwayat, setRiwayat] = useState([])
   const today = new Date().toISOString().split('T')[0]
 
@@ -294,13 +296,21 @@ function Dashboard() {
 
   const todayEntry = riwayat.find((r) => r.tanggal === today) ?? null
 
+  const displayName = user?.name || user?.nama || null
+
   return (
     <MainLayout title='Dashboard'>
       <div className='max-w-2xl mx-auto'>
 
         {/* Greeting */}
         <div className='mb-6'>
-          <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>{getGreeting()}</h1>
+          <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>
+            {getGreeting()},{' '}
+            <span className={displayName ? 'text-teal-500' : 'text-slate-300 italic'}>
+              {displayName ?? 'Guest'}
+            </span>
+            👋
+          </h1>
           <p className='text-slate-400 mt-1.5 text-sm'>Pantau kesehatan mental harianmu</p>
         </div>
 
