@@ -24,13 +24,12 @@ function getGreeting() {
 }
 
 const STRESS_COLOR = {
-  'Rendah':        { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-600', bar: 'bg-emerald-400', dot: 'bg-emerald-400' },
-  'Sedang':        { bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-500',   badge: 'bg-amber-100 text-amber-600',   bar: 'bg-amber-400',   dot: 'bg-amber-400'   },
-  'Tinggi':        { bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-500',    badge: 'bg-rose-100 text-rose-600',    bar: 'bg-rose-400',    dot: 'bg-rose-400'    },
-  'Sangat Tinggi': { bg: 'bg-rose-100',   border: 'border-rose-300',    text: 'text-rose-700',    badge: 'bg-rose-200 text-rose-700',    bar: 'bg-rose-600',    dot: 'bg-rose-600'    },
+  'Rendah': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-600', bar: 'bg-emerald-400', dot: 'bg-emerald-400' },
+  'Sedang': { bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-500',   badge: 'bg-amber-100 text-amber-600',   bar: 'bg-amber-400',   dot: 'bg-amber-400'   },
+  'Tinggi': { bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-500',    badge: 'bg-rose-100 text-rose-600',    bar: 'bg-rose-400',    dot: 'bg-rose-400'    },
 }
 
-const STRESS_HEIGHT = { 'Rendah': 40, 'Sedang': 80, 'Tinggi': 120, 'Sangat Tinggi': 160 }
+const STRESS_HEIGHT = { 'Rendah': 40, 'Sedang': 80, 'Tinggi': 120 }
 
 function getLast7Days() {
   const days = []
