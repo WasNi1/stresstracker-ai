@@ -3,16 +3,14 @@ import {
   LuLayoutDashboard,
   LuClipboardList,
   LuHistory,
-  LuSettings,
-  LuUser,
+  LuUserCog,
 } from 'react-icons/lu'
 
 const navItems = [
   { to: '/',             icon: <LuLayoutDashboard size={20} />, label: 'Home' },
   { to: '/input-harian', icon: <LuClipboardList size={20} />,  label: 'Input' },
-  // { to: '/riwayat',      icon: <LuHistory size={20} />,        label: 'Riwayat' },
-  { to: '/profile',      icon: <LuUser size={20} />,           label: 'Profil' },
-  { to: '/settings',     icon: <LuSettings size={20} />,    label: 'Settings' },
+  { to: '/riwayat',      icon: <LuHistory size={20} />,        label: 'Riwayat' },
+  { to: '/akun',         icon: <LuUserCog size={20} />,        label: 'Akun' },
 ]
 
 function BottomNav() {

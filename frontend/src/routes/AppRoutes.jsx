@@ -4,8 +4,7 @@ import Register from '../pages/Register'
 import Dashboard from '../pages/Dashboard'
 import DailyInput from '../pages/DailyInput'
 import Riwayat from '../pages/Riwayat'
-import Profile from '../pages/Profile'
-import Settings from '../pages/Settings'
+import Akun from '../pages/Akun'
 
 function AppRoutes() {
   return (
@@ -16,8 +15,7 @@ function AppRoutes() {
         <Route path='/register' element={<Register />} />
         <Route path='/input-harian' element={<DailyInput />} />
         <Route path='/riwayat' element={<Riwayat />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/settings' element={<Settings />} />
+        <Route path='/akun' element={<Akun />} />
       </Routes>
     </BrowserRouter>
   )

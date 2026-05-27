@@ -3,18 +3,15 @@ import {
   LuLayoutDashboard,
   LuClipboardList,
   LuHistory,
-  LuLightbulb,
-  LuUser,
-  LuSettings,
+  LuUserCog,
   LuBrainCircuit,
 } from 'react-icons/lu'
 
 const navItems = [
-  { to: '/', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/input-harian', icon: <LuClipboardList size={18} />, label: 'Input Harian' },
-  // { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
-  { to: '/profile', icon: <LuUser size={18} />, label: 'Profile' },
-  { to: '/settings', icon: <LuSettings size={18} />, label: 'Settings' },
+  { to: '/',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/input-harian', icon: <LuClipboardList size={18} />,  label: 'Input Harian' },
+  { to: '/riwayat',      icon: <LuHistory size={18} />,        label: 'Riwayat' },
+  { to: '/akun',         icon: <LuUserCog size={18} />,        label: 'Akun' },
 ]
 
 function Sidebar() {
@@ -54,16 +51,6 @@ function Sidebar() {
           )
         })}
       </nav>
-
-      {/* Bottom Profile */}
-      {/* <div className='mt-6 bg-teal-50 rounded-2xl p-4 flex items-center gap-3'>
-        <img src='https://i.pravatar.cc/40' alt='profile' className='w-9 h-9 rounded-xl object-cover' />
-        <div className='flex-1 min-w-0'>
-          <p className='text-sm font-semibold text-slate-700 truncate'>Nova Wijaya</p>
-          <p className='text-xs text-teal-500'>Healthy Lifestyle</p>
-        </div>
-        <LuSettings size={15} className='text-slate-300' />
-      </div> */}
     </div>
   )
 }
