@@ -47,27 +47,27 @@ const DAY_LABEL = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 function formatLabel(key) {
   const map = {
     // Pola & kualitas tidur
-    durasi_tidur_menit:     'durasi_tidur_menit',
-    sering_terbangun_malam: 'sering_terbangun_malam',
-    mimpi_buruk:            'mimpi_buruk',
-    screen_sebelum_tidur:   'screen_sebelum_tidur',
+    durasi_tidur_menit:     'Durasi Tidur (menit)',
+    sering_terbangun_malam: 'Sering Terbangun Malam',
+    mimpi_buruk:            'Mimpi Buruk',
+    screen_sebelum_tidur:   'Screen Sebelum Tidur (menit)',
     // Konsumsi zat & substansi
-    minum_kopi_hari_ini:    'minum_kopi_hari_ini',
-    merokok:                'merokok',
-    konsumsi_alkohol:       'konsumsi_alkohol',
+    minum_kopi_hari_ini:    'Minum Kopi Hari Ini',
+    merokok:                'Merokok',
+    konsumsi_alkohol:       'Konsumsi Alkohol',
     // Beban & tekanan kerja
-    deadline_hari_ini:      'deadline_hari_ini',
-    lembur:                 'lembur',
-    konsentrasi:            'konsentrasi',
+    deadline_hari_ini:      'Deadline Hari Ini',
+    lembur:                 'Lembur',
+    konsentrasi:            'Konsentrasi',
     // Kondisi hubungan sosial
-    suasana_hati:           'suasana_hati',
-    konflik_interpersonal:  'konflik_interpersonal',
-    merasa_kesepian:        'merasa_kesepian',
-    interaksi_sosial:       'interaksi_sosial',
+    suasana_hati:           'Suasana Hati',
+    konflik_interpersonal:  'Konflik Interpersonal',
+    merasa_kesepian:        'Merasa Kesepian',
+    interaksi_sosial:       'Interaksi Sosial',
     // Aktivitas pemulihan diri
-    meditasi:               'meditasi',
-    aktivitas_hobi:         'aktivitas_hobi',
-    waktu_outdoor:          'waktu_outdoor',
+    meditasi:               'Meditasi',
+    aktivitas_hobi:         'Aktivitas Hobi',
+    waktu_outdoor:          'Waktu Outdoor',
   }
   return map[key] || key
 }
