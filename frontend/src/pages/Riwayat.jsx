@@ -276,31 +276,80 @@ function useRiwayatData() {
   const fetchData = () => {
     setLoading(true)
     setError(null)
+    try {
+      const raw = localStorage.getItem('riwayat_harian')
+      if (!raw) {
+        // no local data yet
+        setEntries([])
+        setChartData([])
+        setStats({ totalLog: 0, avgStress: 0, streak: 0, logWeek: 0 })
+        setLoading(false)
+        return
+      }
 
-    // ── TODO: Uncomment blok ini ketika backend sudah siap ──────────────────
-    // Promise.all([
-    //   getRiwayat({ limit: 30 }),
-    //   getRiwayatChart('minggu'),
-    // ])
-    //   .then(([riwayatRes, chartRes]) => {
-    //     const payload = riwayatRes.data.data
-    //     setEntries(payload?.entries ?? null)
-    //     setStats(payload?.stats ?? null)
-    //     setChartData(chartRes.data.data ?? null)
-    //   })
-    //   .catch((err) => {
-    //     setError(err.message)
-    //   })
-    //   .finally(() => setLoading(false))
-    // ────────────────────────────────────────────────────────────────────────
+      const riwayat = JSON.parse(raw)
 
-    // Simulasi sementara — hapus blok ini ketika backend sudah siap
-    setTimeout(() => {
-      setEntries(null)
-      setChartData(null)
-      setStats(null)
+      // normalize entries to UI shape used in this page
+      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
+      const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
+
+      const mapped = riwayat.map((r, idx) => {
+        const d = new Date(r.tanggal)
+        const dateISO = r.tanggal
+        const date = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+        const dateShort = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
+        const dayName = dayNames[d.getDay()]
+
+        const stressLabel = r.stressLevel || r.stress || null
+        const stressNum = r.stressNum ?? r.stressNum ?? null
+        const color = stressLabel === 'Tinggi' ? 'red' : stressLabel === 'Sedang' ? 'amber' : 'teal'
+
+        const sleepMinutes = r.durasi_tidur_menit ?? r.tidurJam ?? null
+        let sleepLabel = null
+        if (sleepMinutes != null) {
+          if (sleepMinutes < 360) sleepLabel = 'Kurang'
+          else if (sleepMinutes < 420) sleepLabel = 'Cukup'
+          else sleepLabel = 'Baik'
+        }
+
+        return {
+          id: r.id ?? idx,
+          dateISO,
+          date,
+          dateShort,
+          dayName,
+          stress: stressLabel ? { level: stressNum ?? null, label: stressLabel, color } : null,
+          sleep: sleepLabel ? { label: sleepLabel, color: sleepLabel === 'Baik' ? 'teal' : sleepLabel === 'Cukup' ? 'blue' : 'red' } : null,
+          mood: r.mood ?? null,
+          details: r,
+          rekomendasi: r.rekomendasi ?? [],
+        }
+      }).sort((a,b) => a.dateISO.localeCompare(b.dateISO))
+
+      // chartData: per day values
+      const chartData = mapped.map((e) => ({
+        label: `${e.dayName} ${e.dateShort}`,
+        labelShort: e.dateShort,
+        stressLevel: e.stress?.level ?? 0,
+        moodScore: e.mood?.score ?? 0,
+        sleepHours: e.details?.durasi_tidur_menit != null ? parseFloat((e.details.durasi_tidur_menit/60).toFixed(1)) : 0,
+      }))
+
+      // stats
+      const totalLog = mapped.length
+      const avgStress = mapped.length ? (mapped.reduce((s, e) => s + (e.stress?.level ?? 0), 0) / mapped.length).toFixed(1) : 0
+      const now = new Date(); now.setHours(23,59,59,999)
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7); weekStart.setHours(0,0,0,0)
+      const logWeek = mapped.filter(e => new Date(e.dateISO) >= weekStart && new Date(e.dateISO) <= now).length
+
+      setEntries(mapped)
+      setChartData(chartData)
+      setStats({ totalLog, avgStress, streak: 0, logWeek })
+    } catch (err) {
+      setError(err.message)
+    } finally {
       setLoading(false)
-    }, 800)
+    }
   }
 
   useEffect(() => { fetchData() }, [])
@@ -316,6 +365,7 @@ const STRESS_FILTERS = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
 
 export default function RiwayatPage() {
   const { entries, chartData, stats, loading } = useRiwayatData()
+  const [period, setPeriod] = useState('8hari') // '8hari' | 'tahun'
   const [expandedId, setExpandedId]   = useState(null)
   const [search, setSearch]           = useState('')
   const [filterStress, setFilterStress] = useState('Semua')
@@ -338,22 +388,82 @@ export default function RiwayatPage() {
   const streak    = stats?.streak    ?? '-'
   const logWeek   = stats?.logWeek   ?? '-'
 
+  // compute period entries (8 hari / 1 tahun)
+  const periodEntries = (() => {
+    if (!entries) return []
+    if (period === '8hari') {
+      const end = new Date(); end.setHours(23,59,59,999)
+      const start = new Date(end); start.setDate(end.getDate() - 7); start.setHours(0,0,0,0)
+      return entries.filter(e => new Date(e.dateISO) >= start && new Date(e.dateISO) <= end)
+    }
+    if (period === 'tahun') {
+      const end = new Date(); end.setHours(23,59,59,999)
+      const start = new Date(end); start.setFullYear(end.getFullYear() - 1); start.setHours(0,0,0,0)
+      return entries.filter(e => new Date(e.dateISO) >= start && new Date(e.dateISO) <= end)
+    }
+    return entries
+  })()
+
+  // prepare chart data for the selected period
+  const periodChartData = (() => {
+    if (!periodEntries || periodEntries.length === 0) return []
+    if (period === 'tahun') {
+      // aggregate by month
+      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
+      const grouped = {}
+      periodEntries.forEach(e => {
+        const m = new Date(e.dateISO).getMonth()
+        if (!grouped[m]) grouped[m] = []
+        grouped[m].push(e)
+      })
+      return Object.keys(grouped).sort().map(m => {
+        const arr = grouped[m]
+        return {
+          label: months[parseInt(m)],
+          labelShort: months[parseInt(m)].slice(0,3),
+          stressLevel: parseFloat((arr.reduce((a,x) => a + (x.stress?.level ?? 0), 0) / arr.length).toFixed(1)),
+          moodScore: parseFloat((arr.reduce((a,x) => a + (x.mood?.score ?? 0), 0) / arr.length).toFixed(1)),
+          sleepHours: parseFloat((arr.reduce((a,x) => a + (x.details?.durasi_tidur_menit ?? 0), 0) / arr.length / 60).toFixed(1)),
+        }
+      })
+    }
+    // default: daily points
+    return periodEntries.map(e => ({
+      label: `${e.dayName} ${e.dateShort}`,
+      labelShort: e.dateShort,
+      stressLevel: e.stress?.level ?? 0,
+      moodScore: e.mood?.score ?? 0,
+      sleepHours: e.details?.durasi_tidur_menit != null ? parseFloat((e.details.durasi_tidur_menit/60).toFixed(1)) : 0,
+    }))
+  })()
+
   return (
     <MainLayout title='Riwayat Log'>
       <div className='max-w-3xl mx-auto'>
 
-        {/* ── Stat cards ── */}
+        {/* Period selector + Stat cards */}
+        <div className='mb-3 flex items-center gap-2'>
+          <button
+            onClick={() => setPeriod('8hari')}
+            className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${period === '8hari' ? 'bg-teal-500 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}
+          >8 Hari</button>
+          <button
+            onClick={() => setPeriod('tahun')}
+            className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${period === 'tahun' ? 'bg-teal-500 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}
+          >1 Tahun</button>
+        </div>
+
         <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
-          <StatCard label='TOTAL LOG'        value={totalLog}  sub='Sejak bergabung'          color='slate' />
-          <StatCard label='RATA-RATA STRESS' value={avgStress} sub='Level (PSS-based)'         color='amber' />
-          <StatCard label='STREAK'           value={streak}    sub='Hari berturut-turut 🔥'    color='teal' />
-          <StatCard label='LOG MINGGU INI'   value={logWeek}   sub='Hari tercatat'             color='slate' />
+          <StatCard label='LOG (PERIODE)'    value={periodEntries.length ?? 0} sub={period === '8hari' ? '8 hari terakhir' : '12 bulan terakhir'} color='slate' />
+          <StatCard label='RATA-RATA STRESS'  value={avgStress} sub='Level (PSS-based)' color='amber' />
+          <StatCard label='STREAK'            value={streak} sub='Hari berturut-turut 🔥' color='teal' />
+          <StatCard label='LOG MINGGU INI'    value={logWeek} sub='Hari tercatat' color='slate' />
         </div>
 
         {/* ── Trend chart ── */}
         <div className='bg-white border border-slate-100 rounded-3xl p-5 mb-6 shadow-sm'>
           <div className='flex items-center justify-between mb-1'>
-            <div className='text-sm font-semibold text-slate-700'>Tren Stress 7 Hari Terakhir</div>
+            <div className='text-sm font-semibold text-slate-700'>Tren Stress {period === '8hari' ? '8 Hari Terakhir' : '12 Bulan Terakhir'}</div>
             <span className='text-[11px] font-mono text-teal-500 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full'>
               Skala PSS 1–4
             </span>
@@ -365,7 +475,7 @@ export default function RiwayatPage() {
               <LuLoader size={24} className='text-slate-300 animate-spin' />
             </div>
           ) : (
-            <MiniBarChart data={chartData} empty={!chartData} />
+            <MiniBarChart data={periodChartData} empty={!periodChartData || periodChartData.length === 0} />
           )}
 
           <div className='flex gap-3 mt-3 flex-wrap'>
