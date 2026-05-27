@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  LuMoon, LuSun, LuLeaf, LuSmartphone, LuBriefcase,
-  LuHeart, LuUsers, LuSave,
+  LuMoon, LuFlaskConical, LuBriefcase,
+  LuUsers, LuSave,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 
@@ -22,7 +22,8 @@ function menitKeJam(menit) {
   if (menit === null) return '-'
   const j = Math.floor(menit / 60)
   const m = menit % 60
-  return `${j} jam ${m} menit`
+  const jamStr = j > 0 && m > 0 ? `${j} jam ${m} menit` : j > 0 ? `${j} jam` : `${m} menit`
+  return `${menit} menit (${jamStr})`
 }
 
 /* ─────────────────────────────────
@@ -75,14 +76,17 @@ function FieldLabel({ children, sub }) {
   )
 }
 
-function SectionHeader({ icon: Icon, title }) {
+function SectionHeader({ icon: Icon, title, sub }) {
   return (
-    <div className='flex items-center gap-2 mb-4 pt-2'>
-      <div className='w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center'>
-        <Icon size={15} className='text-teal-500' />
+    <div className='mb-4 pt-1'>
+      <div className='flex items-center gap-2 mb-1'>
+        <div className='w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center'>
+          <Icon size={15} className='text-teal-500' />
+        </div>
+        <h3 className='text-base font-semibold text-slate-800'>{title}</h3>
       </div>
-      <h3 className='text-base font-semibold text-slate-800'>{title}</h3>
-      <div className='flex-1 h-px bg-slate-100 ml-2' />
+      {sub && <p className='text-xs text-slate-400 ml-10'>{sub}</p>}
+      <div className='h-px bg-slate-100 mt-3' />
     </div>
   )
 }
@@ -255,11 +259,11 @@ function DailyInput() {
           <p className='text-sm text-slate-400 mt-1'>Isi data hari ini untuk melihat prediksi stress level kamu.</p>
         </div>
 
-        <div className='space-y-2'>
+        <div className='space-y-3'>
 
-          {/* ── TIDUR ── */}
+          {/* ── 1. POLA & KUALITAS TIDUR ── */}
           <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
-            <SectionHeader icon={LuMoon} title='Tidur' />
+            <SectionHeader icon={LuMoon} title='Pola & kualitas tidur' sub='Seberapa nyenyak seseorang beristirahat' />
 
             <div className='grid grid-cols-2 gap-4 mb-4'>
               <div>
@@ -284,7 +288,7 @@ function DailyInput() {
 
             {/* Durasi otomatis */}
             <div className={`rounded-xl px-4 py-3 mb-4 flex items-center justify-between ${durasi !== null ? 'bg-teal-50 border border-teal-100' : 'bg-slate-50 border border-slate-100'}`}>
-              <span className='text-xs text-slate-500'>Durasi tidur (otomatis)</span>
+              <span className='text-xs text-slate-500'>durasi_tidur_menit (otomatis)</span>
               <span className={`text-sm font-semibold ${durasi !== null ? 'text-teal-600' : 'text-slate-400'}`}>
                 {durasi !== null ? menitKeJam(durasi) : 'Isi jam tidur & bangun'}
               </span>
@@ -292,11 +296,11 @@ function DailyInput() {
 
             <div className='space-y-0 divide-y divide-slate-50'>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Sering terbangun saat tidur malam?</FieldLabel>
+                <FieldLabel sub=''>Sering terbangun saat tidur malam?</FieldLabel>
                 <YesNo value={form.sering_terbangun_malam} onChange={set('sering_terbangun_malam')} />
               </div>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Mengalami mimpi buruk?</FieldLabel>
+                <FieldLabel sub=''>Mengalami mimpi buruk?</FieldLabel>
                 <YesNo value={form.mimpi_buruk} onChange={set('mimpi_buruk')} />
               </div>
             </div>
@@ -309,65 +313,38 @@ function DailyInput() {
             </div>
           </div>
 
-          {/* ── KONSUMSI ── */}
+          {/* ── 2. KONSUMSI ZAT & SUBSTANSI ── */}
           <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
-            <SectionHeader icon={LuLeaf} title='Konsumsi' />
+            <SectionHeader icon={LuFlaskConical} title='Konsumsi zat & substansi' sub='Zat yang dikonsumsi dan mempengaruhi tubuh' />
             <div className='space-y-0 divide-y divide-slate-50'>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Minum kopi hari ini?</FieldLabel>
+                <FieldLabel sub=''>Minum kopi hari ini?</FieldLabel>
                 <YesNo value={form.minum_kopi_hari_ini} onChange={set('minum_kopi_hari_ini')} />
               </div>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Merokok?</FieldLabel>
+                <FieldLabel sub=''>Merokok?</FieldLabel>
                 <YesNo value={form.merokok} onChange={set('merokok')} />
               </div>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Konsumsi alkohol hari ini?</FieldLabel>
+                <FieldLabel sub=''>Konsumsi alkohol hari ini?</FieldLabel>
                 <YesNo value={form.konsumsi_alkohol} onChange={set('konsumsi_alkohol')} />
               </div>
             </div>
           </div>
 
-          {/* ── AKTIVITAS & KERJA ── */}
+          {/* ── 3. BEBAN & TEKANAN KERJA ── */}
           <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
-            <SectionHeader icon={LuBriefcase} title='Aktivitas & Kerja' />
+            <SectionHeader icon={LuBriefcase} title='Beban & tekanan kerja' sub='Tuntutan pekerjaan hari ini' />
 
-            <div className='mb-4'>
-              <FieldLabel sub='Durasi waktu di luar ruangan hari ini dalam menit'>
-                Waktu outdoor
-              </FieldLabel>
-              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
-            </div>
-
-            <div className='space-y-0 divide-y divide-slate-50'>
+            <div className='space-y-0 divide-y divide-slate-50 mb-4'>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Ada deadline pekerjaan / tugas hari ini?</FieldLabel>
+                <FieldLabel sub=''>Ada deadline pekerjaan / tugas hari ini?</FieldLabel>
                 <YesNo value={form.deadline_hari_ini} onChange={set('deadline_hari_ini')} />
               </div>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Bekerja melebihi jam normal (lembur)?</FieldLabel>
+                <FieldLabel sub=''>Bekerja melebihi jam normal (lembur)?</FieldLabel>
                 <YesNo value={form.lembur} onChange={set('lembur')} />
               </div>
-              <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Melakukan aktivitas hobi hari ini?</FieldLabel>
-                <YesNo value={form.aktivitas_hobi} onChange={set('aktivitas_hobi')} />
-              </div>
-            </div>
-          </div>
-
-          {/* ── SUASANA HATI ── */}
-          <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
-            <SectionHeader icon={LuHeart} title='Suasana Hati' />
-
-            <div className='mb-5'>
-              <FieldLabel sub='Kondisi suasana hati secara umum hari ini'>
-                Suasana hati
-              </FieldLabel>
-              <ChipGroup
-                options={['Positif', 'Negatif', 'Netral', 'Campur']}
-                value={form.suasana_hati}
-                onChange={set('suasana_hati')}
-              />
             </div>
 
             <div>
@@ -384,22 +361,26 @@ function DailyInput() {
             </div>
           </div>
 
-          {/* ── SOSIAL ── */}
+          {/* ── 4. KONDISI HUBUNGAN SOSIAL ── */}
           <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
-            <SectionHeader icon={LuUsers} title='Sosial & Relaksasi' />
+            <SectionHeader icon={LuUsers} title='Kondisi hubungan sosial' sub='Kualitas interaksi dengan orang sekitar' />
 
             <div className='space-y-0 divide-y divide-slate-50 mb-4'>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Terjadi konflik / pertengkaran dengan orang lain?</FieldLabel>
+                <FieldLabel sub=''>Kondisi suasana hati secara umum hari ini</FieldLabel>
+                <ChipGroup
+                  options={['Positif', 'Negatif', 'Netral', 'Campur']}
+                  value={form.suasana_hati}
+                  onChange={set('suasana_hati')}
+                />
+              </div>
+              <div className='flex justify-between items-center py-3'>
+                <FieldLabel sub=''>Terjadi konflik / pertengkaran dengan orang lain?</FieldLabel>
                 <YesNo value={form.konflik_interpersonal} onChange={set('konflik_interpersonal')} />
               </div>
               <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Merasa kesepian hari ini?</FieldLabel>
+                <FieldLabel sub=''>Merasa kesepian hari ini?</FieldLabel>
                 <YesNo value={form.merasa_kesepian} onChange={set('merasa_kesepian')} />
-              </div>
-              <div className='flex justify-between items-center py-3'>
-                <FieldLabel>Melakukan meditasi hari ini?</FieldLabel>
-                <YesNo value={form.meditasi} onChange={set('meditasi')} />
               </div>
             </div>
 
@@ -414,6 +395,29 @@ function DailyInput() {
                 leftLabel='Sangat sedikit'
                 rightLabel='Sangat banyak'
               />
+            </div>
+          </div>
+
+          {/* ── 5. AKTIVITAS PEMULIHAN DIRI ── */}
+          <div className='bg-white border border-slate-100 rounded-2xl p-5 shadow-sm'>
+            <SectionHeader icon={LuSave} title='Aktivitas pemulihan diri' sub='Kegiatan yang membantu menurunkan stres' />
+
+            <div className='space-y-0 divide-y divide-slate-50 mb-4'>
+              <div className='flex justify-between items-center py-3'>
+                <FieldLabel sub=''>Melakukan meditasi hari ini?</FieldLabel>
+                <YesNo value={form.meditasi} onChange={set('meditasi')} />
+              </div>
+              <div className='flex justify-between items-center py-3'>
+                <FieldLabel sub=''>Melakukan aktivitas hobi hari ini?</FieldLabel>
+                <YesNo value={form.aktivitas_hobi} onChange={set('aktivitas_hobi')} />
+              </div>
+            </div>
+
+            <div>
+              <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
+                Waktu outdoor
+              </FieldLabel>
+              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
