@@ -5,16 +5,7 @@ import {
   LuPencil,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
-
-// ─── Ambil data user dari localStorage ───────────────────────────────────────
-function getUserData() {
-  try {
-    const raw = localStorage.getItem('user')
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    return {}
-  }
-}
+import { useApp } from '../context/AppContext'
 
 function Tag({ color, children }) {
   const colors = {
@@ -58,26 +49,46 @@ const achievements = [
 ]
 
 export default function Profile() {
+  const { user, updateUser } = useApp()
   const [editOpen, setEditOpen] = useState(false)
 
-  // ── Ambil & normalkan data user ─────────────────────────────────────────
-  const user = getUserData()
+  // Ambil data dari context/localStorage
+  const displayName   = user?.name   || user?.nama          || null
+  const displayEmail  = user?.email                         || null
+  const displayAge    = user?.age    || user?.usia          || null
+  const displayGender = user?.gender || user?.jenis_kelamin || null
+  const displayJob    = user?.job    || user?.pekerjaan     || null
 
-  const displayName   = user?.name   || user?.nama              || null
-  const displayEmail  = user?.email                             || null
-  const displayAge    = user?.age    || user?.usia              || null
-  const displayGender = user?.gender || user?.jenis_kelamin     || null
-  const displayJob    = user?.job    || user?.pekerjaan         || null
-
-  // Inisial avatar: huruf pertama nama, atau "G" untuk guest
   const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : 'G'
 
-  // Sub-header: gabungan pekerjaan · usia · gender (hanya yang ada)
   const subParts = [
     displayJob,
     displayAge    ? `${displayAge} tahun` : null,
     displayGender,
   ].filter(Boolean)
+
+  // State form edit — pre-fill dari data yang ada, kosong kalau belum ada
+  const [form, setForm] = useState({
+    nama:      displayName  ?? '',
+    email:     displayEmail ?? '',
+    usia:      displayAge   ? String(displayAge) : '',
+    pekerjaan: displayJob   ?? '',
+  })
+
+  const handleSave = () => {
+    const updated = {
+      ...user,
+      name:      form.nama      || null,
+      nama:      form.nama      || null,
+      email:     form.email     || null,
+      age:       form.usia      ? Number(form.usia) : null,
+      usia:      form.usia      ? Number(form.usia) : null,
+      job:       form.pekerjaan || null,
+      pekerjaan: form.pekerjaan || null,
+    }
+    updateUser(updated)
+    setEditOpen(false)
+  }
 
   return (
     <MainLayout title='Profil'>
@@ -92,12 +103,9 @@ export default function Profile() {
             <div className='flex-1 min-w-0'>
               <div className='flex items-center justify-between'>
                 <div>
-                  {/* Nama — fallback "Guest" jika belum ada */}
                   <h2 className={`text-xl font-semibold ${displayName ? 'text-slate-800' : 'text-slate-300 italic'}`}>
                     {displayName ?? 'Guest'}
                   </h2>
-
-                  {/* Sub-header: pekerjaan · usia · gender */}
                   <p className='text-sm text-slate-400 mt-0.5'>
                     {subParts.length > 0
                       ? subParts.join(' · ')
@@ -114,7 +122,6 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Email */}
               <div className='flex items-center gap-1.5 mt-2 text-xs text-slate-400'>
                 <LuMail size={12} />
                 {displayEmail
@@ -123,7 +130,6 @@ export default function Profile() {
                 }
               </div>
 
-              {/* Tanggal bergabung (dari token/user jika ada, atau disembunyikan) */}
               {user?.created_at && (
                 <div className='flex items-center gap-1.5 mt-1 text-xs text-slate-400'>
                   <LuCalendar size={12} />
@@ -137,26 +143,33 @@ export default function Profile() {
           {editOpen && (
             <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3'>
               {[
-                { label: 'Nama lengkap', placeholder: displayName  ?? 'Nova Wijaya' },
-                { label: 'Email',        placeholder: displayEmail  ?? 'nama@email.com' },
-                { label: 'Usia',         placeholder: displayAge    ? String(displayAge) : '22' },
-                { label: 'Pekerjaan',    placeholder: displayJob    ?? 'Mahasiswa' },
+                { label: 'Nama lengkap', key: 'nama',      placeholder: 'Contoh: Budi Santoso',    type: 'text'   },
+                { label: 'Email',        key: 'email',     placeholder: 'nama@email.com',           type: 'email'  },
+                { label: 'Usia',         key: 'usia',      placeholder: 'Contoh: 22',               type: 'number' },
+                { label: 'Pekerjaan',    key: 'pekerjaan', placeholder: 'Contoh: Mahasiswa, Guru…', type: 'text'   },
               ].map((f) => (
-                <div key={f.label}>
+                <div key={f.key}>
                   <label className='text-xs text-slate-400 mb-1 block'>{f.label}</label>
                   <input
-                    type='text'
+                    type={f.type}
                     placeholder={f.placeholder}
-                    defaultValue={f.placeholder !== ('Nova Wijaya' || 'nama@email.com' || '22' || 'Mahasiswa') ? f.placeholder : ''}
+                    value={form[f.key]}
+                    onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
                     className='w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-teal-400 transition-all'
                   />
                 </div>
               ))}
               <div className='col-span-2 flex justify-end gap-2 mt-1'>
-                <button onClick={() => setEditOpen(false)} className='text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'>
+                <button
+                  onClick={() => setEditOpen(false)}
+                  className='text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'
+                >
                   Batal
                 </button>
-                <button onClick={() => setEditOpen(false)} className='text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all'>
+                <button
+                  onClick={handleSave}
+                  className='text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all'
+                >
                   Simpan
                 </button>
               </div>
