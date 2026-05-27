@@ -3,7 +3,7 @@ import {
   LuLayoutDashboard,
   LuClipboardList,
   LuHistory,
-  LuTrendingUp,
+  LuSettings,
   LuUser,
 } from 'react-icons/lu'
 
@@ -12,7 +12,7 @@ const navItems = [
   { to: '/input-harian', icon: <LuClipboardList size={20} />,  label: 'Input' },
   // { to: '/riwayat',      icon: <LuHistory size={20} />,        label: 'Riwayat' },
   { to: '/profile',      icon: <LuUser size={20} />,           label: 'Profil' },
-  { to: '/settings',     icon: <LuTrendingUp size={20} />,    label: 'Settings' },
+  { to: '/settings',     icon: <LuSettings size={20} />,    label: 'Settings' },
 ]
 
 function BottomNav() {
