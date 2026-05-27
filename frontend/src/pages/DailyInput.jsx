@@ -163,17 +163,30 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
 }
 
 function SliderRow({ min, max, step = 1, value, onChange, unit }) {
+  const handleChange = (e) => {
+    let val = Number(e.target.value)
+
+    if (isNaN(val)) val = min
+    if (val < min) val = min
+    if (val > max) val = max
+
+    val = Math.round(val)
+
+    onChange(val)
+  }
+
   return (
     <div className='flex items-center gap-3'>
       <input
-        type='range'
+        type='number'
         min={min}
         max={max}
         step={step}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className='flex-1 accent-teal-500 h-2'
+        onChange={handleChange}
+        className='w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 bg-slate-50'
       />
+
       <span className='font-mono font-semibold text-teal-500 min-w-[72px] text-right text-sm'>
         {value}{unit}
       </span>
@@ -341,7 +354,7 @@ function DailyInput() {
             <div className={`rounded-xl px-4 py-3 mb-4 flex items-center justify-between ${durasi !== null ? 'bg-teal-50 border border-teal-100' : 'bg-slate-50 border border-slate-100'}`}>
               <span className='text-xs text-slate-500'>durasi tidur (otomatis)</span>
               <span className={`text-sm font-semibold ${durasi !== null ? 'text-teal-600' : 'text-slate-400'}`}>
-                {durasi !== null ? menitKeJam(durasi) : 'Isi jam tidur & bangun'}
+                {durasi !== null ? `${durasi} menit` : 'Isi jam tidur & bangun'}
               </span>
             </div>
 
