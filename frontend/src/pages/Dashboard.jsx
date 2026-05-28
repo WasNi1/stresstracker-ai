@@ -6,8 +6,6 @@ import {
   LuBriefcase,
   LuUsers,
   LuHeart,
-  LuTrendingUp,
-  LuX,
   LuClipboardList,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
@@ -29,19 +27,28 @@ const STRESS_COLOR = {
   'Tinggi': { bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-500',    badge: 'bg-rose-100 text-rose-600',    bar: 'bg-rose-400',    dot: 'bg-rose-400'    },
 }
 
-const STRESS_HEIGHT = { 'Rendah': 40, 'Sedang': 80, 'Tinggi': 120 }
 
-function getLast7Days() {
-  const days = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    days.push(d.toISOString().split('T')[0])
-  }
-  return days
+
+const KONSENTRASI_LABELS = {
+  1: 'Sangat Tidak Fokus – Pikiran melayang, sulit memulai aktivitas',
+  2: 'Kurang Fokus – Mudah terdistraksi, sering kehilangan konsentrasi',
+  3: 'Cukup Fokus – Bisa berkonsentrasi tapi tidak konsisten',
+  4: 'Fokus – Dapat menyelesaikan tugas dengan baik',
+  5: 'Sangat Fokus – Konsentrasi penuh, produktif sepanjang hari',
 }
 
-const DAY_LABEL = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+const INTERAKSI_SOSIAL_LABELS = {
+  1: 'Sangat Minim – Hampir tidak berinteraksi dengan siapapun',
+  2: 'Sedikit – Hanya interaksi seperlunya (singkat/formal)',
+  3: 'Sedang – Beberapa percakapan biasa',
+  4: 'Banyak – Aktif bersosialisasi dengan beberapa orang',
+  5: 'Sangat Banyak – Banyak interaksi sosial, bertemu banyak orang',
+}
+
+function formatSkalaLabel(key, val) {
+  const label = key === 'konsentrasi' ? KONSENTRASI_LABELS[val] : INTERAKSI_SOSIAL_LABELS[val]
+  return label || '-'
+}
 
 function formatLabel(key) {
   const map = {
@@ -86,8 +93,7 @@ function formatValue(key, val) {
     const jamStr = j > 0 && m > 0 ? `${j} jam ${m} menit` : j > 0 ? `${j} jam` : `${m} menit`
     return `${val} menit (${jamStr})`
   }
-  if (key === 'konsentrasi') return `${val} / 5`
-  if (key === 'interaksi_sosial') return `${val} / 5`
+  if (key === 'konsentrasi' || key === 'interaksi_sosial') return formatSkalaLabel(key, val)
   return String(val)
 }
 
@@ -192,119 +198,6 @@ function InputRingkasan({ entry }) {
   )
 }
 
-/* ── Grafik 7 Hari ── */
-function WeeklyChart({ riwayat }) {
-  const [selected, setSelected] = useState(null)
-  const days = getLast7Days()
-
-  const dataMap = {}
-  riwayat.forEach((r) => { dataMap[r.tanggal] = r })
-
-  const today = new Date().toISOString().split('T')[0]
-
-  return (
-    <div className='bg-white border border-slate-100 rounded-3xl p-6 shadow-sm mb-6'>
-      <div className='flex items-center gap-2 mb-5'>
-        <LuTrendingUp size={16} className='text-teal-500' />
-        <h2 className='text-base font-semibold text-slate-700'>Stress Level 7 Hari Terakhir</h2>
-      </div>
-
-      {/* Bar chart */}
-      <div className='flex items-end gap-2 mb-3' style={{ height: '160px' }}>
-        {days.map((date) => {
-          const entry = dataMap[date]
-          const level = entry?.stressLevel
-          const c = level ? STRESS_COLOR[level] : null
-          const isToday = date === today
-          const isSelected = selected?.tanggal === date
-          const d = new Date(date)
-          const dayLabel = DAY_LABEL[d.getDay()]
-
-          return (
-            <div
-              key={date}
-              className='flex-1 flex flex-col items-center gap-1 cursor-pointer group'
-              onClick={() => entry ? setSelected(isSelected ? null : entry) : null}
-            >
-              <div className='w-full flex items-end' style={{ height: '140px' }}>
-                {level ? (
-                  <div
-                    className={`w-full rounded-t-xl transition-all duration-300 ${c.bar} ${isSelected ? 'opacity-100 ring-2 ring-offset-1 ring-teal-400' : 'opacity-80 group-hover:opacity-100'}`}
-                    style={{ height: `${STRESS_HEIGHT[level]}px` }}
-                  />
-                ) : (
-                  <div className='w-full rounded-t-xl bg-slate-100 opacity-50' style={{ height: '20px' }} />
-                )}
-              </div>
-              <span className={`text-xs font-medium ${isToday ? 'text-teal-500' : 'text-slate-400'}`}>
-                {dayLabel}
-              </span>
-              {isToday && <div className='w-1 h-1 rounded-full bg-teal-400' />}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Legend */}
-      <div className='flex flex-wrap gap-3 mb-4'>
-        {Object.entries(STRESS_COLOR).map(([label, c]) => (
-          <div key={label} className='flex items-center gap-1.5'>
-            <div className={`w-2.5 h-2.5 rounded-full ${c.dot}`} />
-            <span className='text-xs text-slate-400'>{label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Detail popup saat bar diklik */}
-      {selected && (
-        <div className={`${STRESS_COLOR[selected.stressLevel].bg} border ${STRESS_COLOR[selected.stressLevel].border} rounded-2xl p-5 mt-2`}>
-          <div className='flex justify-between items-start mb-4'>
-            <div>
-              <div className='text-xs font-mono text-slate-400 mb-1 tracking-wider'>RIWAYAT INPUT</div>
-              <div className='text-sm font-semibold text-slate-700'>{selected.tanggal}</div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${STRESS_COLOR[selected.stressLevel].badge}`}>
-                Stress: {selected.stressLevel}
-              </span>
-              <button
-                onClick={() => setSelected(null)}
-                className='w-7 h-7 bg-white/70 border border-slate-200 rounded-full flex items-center justify-center hover:bg-slate-50'
-              >
-                <LuX size={13} className='text-slate-400' />
-              </button>
-            </div>
-          </div>
-          <div className='space-y-3'>
-            {INPUT_SECTIONS.map(({ title, icon: Icon, keys }) => (
-              <div key={title}>
-                <div className='flex items-center gap-1.5 mb-1.5'>
-                  <Icon size={11} className='text-slate-400' />
-                  <span className='text-xs font-semibold text-slate-500'>{title}</span>
-                </div>
-                <div className='grid grid-cols-2 gap-x-4 gap-y-1 pl-4'>
-                  {keys.map((k) => (
-                    <div key={k} className='flex justify-between items-center'>
-                      <span className='text-xs text-slate-400 font-mono truncate mr-2'>{formatLabel(k)}</span>
-                      <span className='text-xs font-medium text-slate-700 shrink-0'>{formatValue(k, selected[k])}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!riwayat.length && (
-        <p className='text-center text-sm text-slate-400 mt-2'>
-          Belum ada riwayat. Mulai isi input harian untuk melihat grafik.
-        </p>
-      )}
-    </div>
-  )
-}
-
 /* ─────────────────────────────────────────────
    Main Dashboard
 ───────────────────────────────────────────── */
@@ -342,10 +235,7 @@ function Dashboard() {
         {/* 1. Stress level hari ini */}
         <StressHero entry={todayEntry} />
 
-        {/* 2. Grafik 7 hari */}
-        <WeeklyChart riwayat={riwayat} />
-
-        {/* 3. Ringkasan semua input hari ini */}
+        {/* 2. Ringkasan semua input hari ini */}
         {todayEntry ? (
           <InputRingkasan entry={todayEntry} />
         ) : (
