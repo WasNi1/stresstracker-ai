@@ -13,7 +13,6 @@ import {
   LuLoader,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
-import RekomendasiHarian from '../components/RekomendasiHarian'
 
 /* ─────────────────────────────────────────────
    Warna & label helper
@@ -36,19 +35,19 @@ const STRESS_COLOR = {
 const STRESS_HEIGHT = { Rendah: 40, Sedang: 80, Tinggi: 120 }
 
 const KONSENTRASI_LABELS = {
-  1: 'Sangat Tidak Fokus – Pikiran melayang, sulit memulai aktivitas',
-  2: 'Kurang Fokus – Mudah terdistraksi, sering kehilangan konsentrasi',
-  3: 'Cukup Fokus – Bisa berkonsentrasi tapi tidak konsisten',
-  4: 'Fokus – Dapat menyelesaikan tugas dengan baik',
-  5: 'Sangat Fokus – Konsentrasi penuh, produktif sepanjang hari',
+  1: 'Sangat Tidak Fokus',
+  2: 'Kurang Fokus',
+  3: 'Cukup Fokus',
+  4: 'Fokus',
+  5: 'Sangat Fokus',
 }
 
 const INTERAKSI_SOSIAL_LABELS = {
-  1: 'Sangat Minim – Hampir tidak berinteraksi dengan siapapun',
-  2: 'Sedikit – Hanya interaksi seperlunya (singkat/formal)',
-  3: 'Sedang – Beberapa percakapan biasa',
-  4: 'Banyak – Aktif bersosialisasi dengan beberapa orang',
-  5: 'Sangat Banyak – Banyak interaksi sosial, bertemu banyak orang',
+  1: 'Sangat Minim',
+  2: 'Sedikit',
+  3: 'Sedang',
+  4: 'Banyak',
+  5: 'Sangat Banyak',
 }
 
 function formatSkalaLabel(key, val) {
@@ -228,6 +227,136 @@ function DetailRow({ label, value }) {
   )
 }
 
+
+function toNumber(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
+function isYes(value) {
+  if (typeof value === 'boolean') return value
+  return String(value || '').toLowerCase() === 'ya'
+}
+
+function buildLogRecommendation(entry) {
+  const d = entry?.details || {}
+  const stressLevel = entry?.stress?.label || d.stressLevel || d.stress || 'Belum diketahui'
+  const sleep = toNumber(d.durasi_tidur_menit)
+  const screen = toNumber(d.screen_sebelum_tidur)
+  const outdoor = toNumber(d.waktu_outdoor)
+  const konsentrasi = toNumber(d.konsentrasi)
+  const sosial = toNumber(d.interaksi_sosial)
+
+  const causes = []
+  const actions = []
+
+  if (sleep !== null && sleep < 360) {
+    causes.push('Durasi tidur masih kurang')
+    actions.push('Coba tambah waktu tidur dan buat jadwal tidur lebih teratur.')
+  }
+  if (screen !== null && screen > 60) {
+    causes.push('Screen time sebelum tidur cukup tinggi')
+    actions.push('Kurangi penggunaan HP/laptop 30–60 menit sebelum tidur.')
+  }
+  if (isYes(d.merokok)) {
+    causes.push('Ada kebiasaan merokok')
+    actions.push('Kurangi rokok secara bertahap, terutama saat sedang stres.')
+  }
+  if (isYes(d.lembur) || isYes(d.deadline_hari_ini)) {
+    causes.push('Ada tekanan kerja/deadline')
+    actions.push('Bagi tugas menjadi bagian kecil dan ambil jeda singkat.')
+  }
+  if (outdoor !== null && outdoor < 20) {
+    causes.push('Waktu outdoor masih rendah')
+    actions.push('Luangkan 10–20 menit untuk jalan santai atau terkena udara luar.')
+  }
+  if (konsentrasi !== null && konsentrasi <= 2) {
+    causes.push('Konsentrasi sedang menurun')
+    actions.push('Gunakan teknik 25 menit fokus dan 5 menit istirahat.')
+  }
+  if (sosial !== null && sosial <= 2) {
+    causes.push('Interaksi sosial masih sedikit')
+    actions.push('Coba hubungi teman/keluarga atau lakukan obrolan ringan.')
+  }
+
+  if (stressLevel === 'Tinggi') {
+    return {
+      color: 'red',
+      level: 'Stress tinggi',
+      title: 'Prioritaskan pemulihan',
+      conclusion: causes.length
+        ? `Kesimpulan dari log ini: stres tinggi kemungkinan dipengaruhi oleh ${causes.slice(0, 3).join(', ').toLowerCase()}.`
+        : 'Kesimpulan dari log ini: stres sedang tinggi, tubuh perlu diberi waktu istirahat dan pemulihan.',
+      causes,
+      actions: actions.length ? actions : ['Ambil jeda, tarik napas perlahan, dan kurangi aktivitas yang terlalu membebani.'],
+    }
+  }
+
+  if (stressLevel === 'Sedang') {
+    return {
+      color: 'amber',
+      level: 'Stress sedang',
+      title: 'Jaga ritme harian',
+      conclusion: causes.length
+        ? `Kesimpulan dari log ini: kondisi masih cukup stabil, tetapi ${causes.slice(0, 2).join(', ').toLowerCase()} perlu diperhatikan.`
+        : 'Kesimpulan dari log ini: kondisi cukup stabil. Pertahankan pola tidur, aktivitas, dan waktu istirahat.',
+      causes,
+      actions: actions.length ? actions : ['Pertahankan rutinitas sehat dan luangkan waktu istirahat yang cukup.'],
+    }
+  }
+
+  return {
+    color: 'teal',
+    level: stressLevel === 'Rendah' ? 'Stress rendah' : stressLevel,
+    title: 'Kondisi cukup baik',
+    conclusion: 'Kesimpulan dari log ini: tingkat stres terlihat rendah. Pertahankan kebiasaan baik yang sudah dilakukan.',
+    causes,
+    actions: actions.length ? actions : ['Pertahankan tidur cukup, aktivitas ringan, dan interaksi sosial yang positif.'],
+  }
+}
+
+function recommendationBadge(color) {
+  return {
+    teal: 'bg-teal-50 text-teal-600 border-teal-100',
+    amber: 'bg-amber-50 text-amber-600 border-amber-100',
+    red: 'bg-rose-50 text-rose-600 border-rose-100',
+  }[color] || 'bg-slate-50 text-slate-500 border-slate-100'
+}
+
+function LogRecommendation({ entry }) {
+  const result = buildLogRecommendation(entry)
+
+  return (
+    <div className='mt-4 bg-white border border-slate-100 rounded-2xl p-4'>
+      <div className='flex flex-wrap items-center gap-2 mb-3'>
+        <span className={`px-3 py-1 rounded-full border text-xs font-bold ${recommendationBadge(result.color)}`}>{result.level}</span>
+        <span className='text-xs font-mono text-slate-400'>REKOMENDASI LOG INI</span>
+      </div>
+      <h4 className='text-sm font-bold text-slate-800 mb-1.5'>{result.title}</h4>
+      <p className='text-xs text-slate-600 leading-relaxed mb-4'>{result.conclusion}</p>
+
+      <div className='grid sm:grid-cols-2 gap-3'>
+        <div className='bg-slate-50 border border-slate-100 rounded-xl p-3'>
+          <div className='text-xs font-semibold text-slate-600 mb-2'>Faktor yang terlihat</div>
+          {result.causes.length ? (
+            <ul className='space-y-1.5'>
+              {result.causes.slice(0, 4).map((item, idx) => <li key={idx} className='text-xs text-slate-500'>• {item}</li>)}
+            </ul>
+          ) : (
+            <p className='text-xs text-slate-400'>Belum ada faktor risiko yang menonjol.</p>
+          )}
+        </div>
+        <div className='bg-slate-50 border border-slate-100 rounded-xl p-3'>
+          <div className='text-xs font-semibold text-slate-600 mb-2'>Saran tindakan</div>
+          <ul className='space-y-1.5'>
+            {result.actions.slice(0, 4).map((item, idx) => <li key={idx} className='text-xs text-slate-500'>• {item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ExpandedDetail({ entry }) {
   const { details } = entry
 
@@ -248,6 +377,7 @@ function ExpandedDetail({ entry }) {
           ))}
         </div>
       </div>
+      <LogRecommendation entry={entry} />
     </div>
   )
 }
@@ -442,12 +572,6 @@ function useRiwayatData() {
         const color = stressLabel === 'Tinggi' ? 'red' : stressLabel === 'Sedang' ? 'amber' : 'teal'
 
         const sleepMinutes = r.durasi_tidur_menit ?? r.tidurJam ?? null
-        let sleepLabel = null
-        if (sleepMinutes != null) {
-          if (sleepMinutes < 360) sleepLabel = 'Kurang'
-          else if (sleepMinutes < 420) sleepLabel = 'Cukup'
-          else sleepLabel = 'Baik'
-        }
 
         return {
           id: r.id ?? idx,
@@ -456,7 +580,6 @@ function useRiwayatData() {
           dateShort,
           dayName,
           stress: stressLabel ? { level: stressNum ?? null, label: stressLabel, color } : null,
-          sleep: sleepLabel ? { label: sleepLabel, color: sleepLabel === 'Baik' ? 'teal' : sleepLabel === 'Cukup' ? 'blue' : 'red' } : null,
           mood: r.mood ?? null,
           details: r,
           rekomendasi: r.rekomendasi ?? [],
@@ -651,8 +774,6 @@ export default function RiwayatPage() {
           )}
 
         </div>
-
-        <RekomendasiHarian mode='riwayat' />
       </div>
     </MainLayout>
   )
