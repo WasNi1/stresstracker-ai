@@ -203,7 +203,7 @@ function Login() {
                   <input type='checkbox' className='accent-teal-500 w-4 h-4 rounded' disabled={loading} />
                   Ingat saya
                 </label>
-                <a href='#' className='text-teal-500 hover:text-teal-600 font-medium'>Lupa password?</a>
+                <Link to='/forgot-password' className='text-teal-500 hover:text-teal-600 font-medium'>Lupa password?</Link>
               </div>
 
               <button
