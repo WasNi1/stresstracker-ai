@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMail, LuCalendar, LuPencil,
@@ -10,12 +10,22 @@ import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
 
 /* ─── Toggle ─── */
-function Toggle({ defaultOn = false, onChange }) {
-  const [on, setOn] = useState(defaultOn)
-  const handle = () => { setOn(!on); onChange?.(!on) }
+function Toggle({ defaultOn = false, checked, onChange }) {
+  const [internalOn, setInternalOn] = useState(defaultOn)
+  const isControlled = checked !== undefined
+  const on = isControlled ? checked : internalOn
+
+  const handle = () => {
+    const next = !on
+    if (!isControlled) setInternalOn(next)
+    onChange?.(next)
+  }
+
   return (
     <button
+      type='button'
       onClick={handle}
+      aria-pressed={on}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${on ? 'bg-teal-500' : 'bg-slate-200'}`}
     >
       <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-200 ${on ? 'left-[22px]' : 'left-[3px]'}`} />
@@ -103,6 +113,38 @@ function PasswordModal({ onClose }) {
   )
 }
 
+
+function getLogStatsFromStorage() {
+  try {
+    const raw = localStorage.getItem('riwayat_harian')
+    const data = raw ? JSON.parse(raw) : []
+    const list = Array.isArray(data) ? data : []
+    const uniqueDates = [...new Set(list.map((item) => item?.tanggal).filter(Boolean))].sort()
+
+    let streak = 0
+    const dateSet = new Set(uniqueDates)
+    const cursor = new Date()
+    cursor.setHours(0, 0, 0, 0)
+
+    while (true) {
+      const key = cursor.toISOString().split('T')[0]
+      if (!dateSet.has(key)) break
+      streak += 1
+      cursor.setDate(cursor.getDate() - 1)
+    }
+
+    return {
+      totalLog: list.length,
+      streak,
+    }
+  } catch {
+    return {
+      totalLog: 0,
+      streak: 0,
+    }
+  }
+}
+
 /* ─── Main ─── */
 export default function Akun() {
   const navigate = useNavigate()
@@ -112,7 +154,9 @@ export default function Akun() {
   const [showDelete, setShowDelete] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [saveOk, setSaveOk] = useState(false)
-  const [reminderHour, setReminderHour] = useState('20:00')
+  const [reminderEnabled, setReminderEnabled] = useState(() => localStorage.getItem('pengingat_input_harian') !== 'false')
+  const [reminderHour, setReminderHour] = useState(() => localStorage.getItem('jam_pengingat_input') || '20:00')
+  const [logStats, setLogStats] = useState(() => getLogStatsFromStorage())
   const [lang, setLang] = useState('Indonesia')
 
   const displayName   = user?.name   || user?.nama          || null
@@ -131,6 +175,21 @@ export default function Akun() {
     usia:      displayAge   ? String(displayAge) : '',
     pekerjaan: displayJob   ?? '',
   })
+
+  useEffect(() => {
+    localStorage.setItem('pengingat_input_harian', String(reminderEnabled))
+  }, [reminderEnabled])
+
+  useEffect(() => {
+    localStorage.setItem('jam_pengingat_input', reminderHour)
+  }, [reminderHour])
+
+  useEffect(() => {
+    const refreshStats = () => setLogStats(getLogStatsFromStorage())
+    refreshStats()
+    window.addEventListener('storage', refreshStats)
+    return () => window.removeEventListener('storage', refreshStats)
+  }, [])
 
   const handleSave = () => {
     const updated = {
@@ -226,7 +285,7 @@ export default function Akun() {
 
           {/* Stats */}
           <div className='grid grid-cols-2 gap-3 pb-5 pt-1 border-t border-slate-100'>
-            {[{ num: '42', label: 'Total log' }, { num: '7', label: 'Streak hari' }].map((s) => (
+            {[{ num: logStats.totalLog, label: 'Total log' }, { num: logStats.streak, label: 'Streak hari' }].map((s) => (
               <div key={s.label} className='text-center py-2'>
                 <div className='text-xl font-bold text-teal-500'>{s.num}</div>
                 <div className='text-xs text-slate-400 mt-0.5'>{s.label}</div>
@@ -237,15 +296,22 @@ export default function Akun() {
 
         {/* ── NOTIFIKASI ── */}
         <SectionCard title='NOTIFIKASI' icon={LuBell}>
-          <SettingsItem label='Pengingat input harian' sub='Ingatkan untuk isi log setiap hari' right={<Toggle defaultOn />} />
+          <SettingsItem
+            label='Pengingat input harian'
+            sub='Ingatkan untuk isi log setiap hari'
+            right={<Toggle checked={reminderEnabled} onChange={setReminderEnabled} />}
+          />
           <SettingsItem
             label='Jam pengingat'
-            sub={`${reminderHour} — sebelum tidur`}
+            sub={reminderEnabled ? `${reminderHour} — sebelum tidur` : 'Pengingat input harian sedang mati'}
             right={
-              <select value={reminderHour} onChange={(e) => setReminderHour(e.target.value)}
-                className='bg-slate-50 border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-teal-400 transition-all'>
-                {['18:00', '19:00', '20:00', '21:00', '22:00'].map((h) => <option key={h}>{h}</option>)}
-              </select>
+              <input
+                type='time'
+                value={reminderHour}
+                disabled={!reminderEnabled}
+                onChange={(e) => setReminderHour(e.target.value)}
+                className={`bg-slate-50 border border-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-400 transition-all ${reminderEnabled ? 'text-slate-600' : 'text-slate-300 cursor-not-allowed opacity-60'}`}
+              />
             }
           />
         </SectionCard>
