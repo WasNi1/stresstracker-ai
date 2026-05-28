@@ -71,7 +71,6 @@ function DeleteModal({ onClose, onConfirm }) {
             <LuTriangleAlert size={18} className='text-red-400' />
           </div>
           <div>
-            <div className='font-semibold text-slate-800'>Hapus semua data?</div>
             <div className='text-xs text-slate-400 mt-0.5'>Tindakan ini tidak bisa dibatalkan</div>
           </div>
         </div>
@@ -338,14 +337,6 @@ export default function Akun() {
             right={
               <button onClick={() => setShowPassword(true)} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:border-teal-400 hover:text-teal-500 transition-all'>
                 Ubah<LuChevronRight size={12} />
-              </button>
-            }
-          />
-          <SettingsItem
-            label='Hapus semua data' sub='Riwayat log dan data akun dihapus permanen'
-            right={
-              <button onClick={() => setShowDelete(true)} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
-                <LuTriangleAlert size={12} />Hapus
               </button>
             }
           />
