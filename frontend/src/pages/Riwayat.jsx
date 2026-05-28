@@ -441,12 +441,7 @@ function useRiwayatData() {
         const color = stressLabel === 'Tinggi' ? 'red' : stressLabel === 'Sedang' ? 'amber' : 'teal'
 
         const sleepMinutes = r.durasi_tidur_menit ?? r.tidurJam ?? null
-        let sleepLabel = null
-        if (sleepMinutes != null) {
-          if (sleepMinutes < 360) sleepLabel = 'Kurang'
-          else if (sleepMinutes < 420) sleepLabel = 'Cukup'
-          else sleepLabel = 'Baik'
-        }
+        
 
         return {
           id: r.id ?? idx,
@@ -455,7 +450,6 @@ function useRiwayatData() {
           dateShort,
           dayName,
           stress: stressLabel ? { level: stressNum ?? null, label: stressLabel, color } : null,
-          sleep: sleepLabel ? { label: sleepLabel, color: sleepLabel === 'Baik' ? 'teal' : sleepLabel === 'Cukup' ? 'blue' : 'red' } : null,
           mood: r.mood ?? null,
           details: r,
           rekomendasi: r.rekomendasi ?? [],
