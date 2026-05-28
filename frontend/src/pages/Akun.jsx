@@ -4,7 +4,7 @@ import {
   LuMail, LuCalendar, LuPencil,
   LuBell, LuPalette, LuLock,
   LuLogOut, LuChevronRight,
-  LuTriangleAlert, LuX, LuCheck,
+  LuTriangleAlert, LuX, LuCheck, LuBriefcase,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
@@ -144,6 +144,9 @@ function getLogStatsFromStorage() {
   }
 }
 
+
+const pekerjaanOptions = ['Mahasiswa', 'Karyawan', 'Freelancer', 'Guru', 'Dokter', 'Wirausaha']
+
 /* ─── Main ─── */
 export default function Akun() {
   const navigate = useNavigate()
@@ -256,10 +259,9 @@ export default function Akun() {
             {editOpen && (
               <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3'>
                 {[
-                  { label: 'Nama lengkap', key: 'nama',      placeholder: 'Contoh: Budi Santoso',    type: 'text'   },
-                  { label: 'Email',        key: 'email',     placeholder: 'nama@email.com',           type: 'email'  },
-                  { label: 'Usia',         key: 'usia',      placeholder: 'Contoh: 22',               type: 'number' },
-                  { label: 'Pekerjaan',    key: 'pekerjaan', placeholder: 'Contoh: Mahasiswa, Guru…', type: 'text'   },
+                  { label: 'Nama lengkap', key: 'nama',  placeholder: 'Contoh: Budi Santoso', type: 'text'   },
+                  { label: 'Email',        key: 'email', placeholder: 'nama@email.com',        type: 'email'  },
+                  { label: 'Usia',         key: 'usia',  placeholder: 'Contoh: 22',            type: 'number' },
                 ].map((f) => (
                   <div key={f.key}>
                     <label className='text-xs text-slate-400 mb-1 block'>{f.label}</label>
@@ -272,6 +274,22 @@ export default function Akun() {
                     />
                   </div>
                 ))}
+                <div>
+                  <label className='text-xs text-slate-400 mb-1 block'>Pekerjaan</label>
+                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-teal-400 transition-all'>
+                    <LuBriefcase size={14} className='text-slate-300 shrink-0' />
+                    <select
+                      value={form.pekerjaan}
+                      onChange={(e) => setForm((prev) => ({ ...prev, pekerjaan: e.target.value }))}
+                      className='w-full bg-transparent outline-none text-sm text-slate-700'
+                    >
+                      <option value=''>Pilih pekerjaan</option>
+                      {pekerjaanOptions.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 <div className='col-span-2 flex justify-end gap-2 mt-1'>
                   <button onClick={() => setEditOpen(false)} className='text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'>Batal</button>
                   <button onClick={handleSave} className='text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all flex items-center gap-1.5'>
