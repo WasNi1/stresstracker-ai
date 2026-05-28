@@ -163,12 +163,13 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
 }
 
 function SliderRow({ min, max, step = 1, value, onChange, unit }) {
+  const rangeMax = max === undefined ? Math.max(1440, Number(value || 0)) : max
   const handleChange = (e) => {
     let val = Number(e.target.value)
 
     if (isNaN(val)) val = min
     if (val < min) val = min
-    if (val > max) val = max
+    if (max !== undefined && val > max) val = max
 
     val = Math.round(val)
 
@@ -180,7 +181,7 @@ function SliderRow({ min, max, step = 1, value, onChange, unit }) {
       <input
         type='number'
         min={min}
-        max={max}
+        {...(max !== undefined ? { max } : {})}
         step={step}
         value={value}
         onChange={handleChange}
@@ -373,7 +374,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi penggunaan layar (HP/laptop) sebelum tidur dalam menit'>
                 Screen time sebelum tidur
               </FieldLabel>
-              <SliderRow min={0} max={240} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
+              <SliderRow min={0} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
             </div>
           </div>
 
@@ -481,7 +482,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
                 Waktu outdoor
               </FieldLabel>
-              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
+              <SliderRow min={0} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
