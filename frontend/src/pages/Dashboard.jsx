@@ -30,19 +30,19 @@ const STRESS_COLOR = {
 
 
 const KONSENTRASI_LABELS = {
-  1: 'Sangat Tidak Fokus – Pikiran melayang, sulit memulai aktivitas',
-  2: 'Kurang Fokus – Mudah terdistraksi, sering kehilangan konsentrasi',
-  3: 'Cukup Fokus – Bisa berkonsentrasi tapi tidak konsisten',
-  4: 'Fokus – Dapat menyelesaikan tugas dengan baik',
-  5: 'Sangat Fokus – Konsentrasi penuh, produktif sepanjang hari',
+  1: 'Sangat Tidak Fokus',
+  2: 'Kurang Fokus',
+  3: 'Cukup Fokus',
+  4: 'Fokus',
+  5: 'Sangat Fokus',
 }
 
 const INTERAKSI_SOSIAL_LABELS = {
-  1: 'Sangat Minim – Hampir tidak berinteraksi dengan siapapun',
-  2: 'Sedikit – Hanya interaksi seperlunya (singkat/formal)',
-  3: 'Sedang – Beberapa percakapan biasa',
-  4: 'Banyak – Aktif bersosialisasi dengan beberapa orang',
-  5: 'Sangat Banyak – Banyak interaksi sosial, bertemu banyak orang',
+  1: 'Sangat Minim',
+  2: 'Sedikit',
+  3: 'Sedang',
+  4: 'Banyak',
+  5: 'Sangat Banyak',
 }
 
 function formatSkalaLabel(key, val) {
