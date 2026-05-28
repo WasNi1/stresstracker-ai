@@ -5,14 +5,15 @@ import {
   LuHistory,
   LuUserCog,
   LuBrainCircuit,
+  LuLightbulb,
 } from 'react-icons/lu'
 
 const navItems = [
   { to: '/',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/dashboard-ai',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard AI' },
+  { to: '/dashboard-rekomendasi', icon: <LuLightbulb size={18} />, label: 'Dashboard Rekomendasi' },
   { to: '/input-harian', icon: <LuClipboardList size={18} />,  label: 'Input Harian' },
   { to: '/riwayat',      icon: <LuHistory size={18} />,        label: 'Riwayat' },
-  { to: '/riwayat-ai',      icon: <LuHistory size={18} />,        label: 'Riwayat AI' },
+  { to: '/riwayat-rekomendasi', icon: <LuLightbulb size={18} />, label: 'Riwayat Rekomendasi' },
   { to: '/akun',         icon: <LuUserCog size={18} />,        label: 'Akun' },
 ]
 
