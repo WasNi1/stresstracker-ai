@@ -9,8 +9,10 @@ import {
 
 const navItems = [
   { to: '/',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/dashboard-ai',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard AI' },
   { to: '/input-harian', icon: <LuClipboardList size={18} />,  label: 'Input Harian' },
   { to: '/riwayat',      icon: <LuHistory size={18} />,        label: 'Riwayat' },
+  { to: '/riwayat-ai',      icon: <LuHistory size={18} />,        label: 'Riwayat AI' },
   { to: '/akun',         icon: <LuUserCog size={18} />,        label: 'Akun' },
 ]
 
