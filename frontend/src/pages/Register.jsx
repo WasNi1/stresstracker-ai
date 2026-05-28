@@ -193,28 +193,26 @@ function Register () {
                 </div>
               </div>
 
-              {/* Pekerjaan & Aktivitas */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-slate-600'>
-                    Pekerjaan
-                  </label>
+              {/* Pekerjaan */}
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-slate-600'>
+                  Pekerjaan
+                </label>
 
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
-                    <LuBriefcase
-                      size={16}
-                      className='text-slate-300 shrink-0'
-                    />
+                <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all'>
+                  <LuBriefcase
+                    size={16}
+                    className='text-slate-300 shrink-0'
+                  />
 
-                    <select className='bg-transparent outline-none text-sm text-slate-700 w-full'>
-                      <option>Mahasiswa</option>
-                      <option>Karyawan</option>
-                      <option>Freelancer</option>
-                      <option>Guru</option>
-                      <option>Dokter</option>
-                      <option>Wirausaha</option>
-                    </select>
-                  </div>
+                  <select className='bg-transparent outline-none text-sm text-slate-700 w-full'>
+                    <option>Mahasiswa</option>
+                    <option>Karyawan</option>
+                    <option>Freelancer</option>
+                    <option>Guru</option>
+                    <option>Dokter</option>
+                    <option>Wirausaha</option>
+                  </select>
                 </div>
               </div>
 
