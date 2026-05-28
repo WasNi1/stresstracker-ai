@@ -33,6 +33,27 @@ const STRESS_COLOR = {
 }
 
 const STRESS_HEIGHT = { Rendah: 40, Sedang: 80, Tinggi: 120 }
+
+const KONSENTRASI_LABELS = {
+  1: 'Sangat Tidak Fokus – Pikiran melayang, sulit memulai aktivitas',
+  2: 'Kurang Fokus – Mudah terdistraksi, sering kehilangan konsentrasi',
+  3: 'Cukup Fokus – Bisa berkonsentrasi tapi tidak konsisten',
+  4: 'Fokus – Dapat menyelesaikan tugas dengan baik',
+  5: 'Sangat Fokus – Konsentrasi penuh, produktif sepanjang hari',
+}
+
+const INTERAKSI_SOSIAL_LABELS = {
+  1: 'Sangat Minim – Hampir tidak berinteraksi dengan siapapun',
+  2: 'Sedikit – Hanya interaksi seperlunya (singkat/formal)',
+  3: 'Sedang – Beberapa percakapan biasa',
+  4: 'Banyak – Aktif bersosialisasi dengan beberapa orang',
+  5: 'Sangat Banyak – Banyak interaksi sosial, bertemu banyak orang',
+}
+
+function formatSkalaLabel(key, val) {
+  const label = key === 'konsentrasi' ? KONSENTRASI_LABELS[val] : INTERAKSI_SOSIAL_LABELS[val]
+  return label || '-'
+}
 const DAY_LABEL = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 
 function getLast7Days() {
@@ -77,7 +98,7 @@ function formatValue(key, val) {
     return `${val} menit (${jamStr})`
   }
   if (key === 'screen_sebelum_tidur') return `${val} menit`
-  if (key === 'konsentrasi' || key === 'interaksi_sosial') return `${val} / 5`
+  if (key === 'konsentrasi' || key === 'interaksi_sosial') return formatSkalaLabel(key, val)
   return String(val)
 }
 
@@ -207,54 +228,25 @@ function DetailRow({ label, value }) {
 }
 
 function ExpandedDetail({ entry }) {
-  const { details, rekomendasi } = entry
+  const { details } = entry
 
-  /* Semua nilai detail ditampilkan apa adanya dari API;
-     jika null/undefined, DetailRow sudah handle dengan '-' */
   return (
-    <div className='mt-4 pt-4 border-t border-slate-100 grid md:grid-cols-2 gap-5'>
-
-      {/* Detail data */}
+    <div className='mt-4 pt-4 border-t border-slate-100'>
       <div className='bg-slate-50 border border-slate-100 rounded-2xl p-4'>
-        <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>DATA HARIAN</div>
-        <DetailRow label='Durasi tidur'      value={details?.tidurJam != null ? `${details.tidurJam} jam` : null} />
-        <DetailRow label='Kualitas tidur'    value={details?.kualitasTidur} />
-        <DetailRow label='Kecemasan'         value={details?.anxiety != null ? `${details.anxiety} / 5` : null} />
-        <DetailRow label='Energi'            value={details?.energi} />
-        <DetailRow label='Screen time'       value={details?.screentime != null ? `${details.screentime} jam` : null} />
-        <DetailRow label='HP sebelum tidur'  value={details?.screenSebelumTidur != null ? `${details.screenSebelumTidur} menit` : null} />
-        <DetailRow label='Beban kerja'       value={details?.bebanKerja} />
-        <DetailRow label='Kafein'            value={details?.kafein != null ? `${details.kafein} gelas` : null} />
-        <DetailRow label='Air putih'         value={details?.airPutih != null ? `${details.airPutih} liter` : null} />
-        <DetailRow label='Olahraga'          value={details?.olahraga == null ? null : details.olahraga ? (details.jenisOlahraga ?? 'Ya') : 'Tidak'} />
-        <DetailRow label='Deadline mendesak' value={details?.deadline == null ? null : details.deadline ? 'Ya' : 'Tidak'} />
-        <DetailRow label='Meditasi'          value={details?.meditasi == null ? null : details.meditasi ? 'Ya ✓' : 'Tidak'} />
-      </div>
-
-      {/* Rekomendasi AI */}
-      <div>
-        <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>REKOMENDASI AI</div>
-        {rekomendasi && rekomendasi.length > 0 ? (
-          <div className='flex flex-col gap-2'>
-            {rekomendasi.map((r, i) => (
-              <div
-                key={i}
-                className='bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 text-sm text-slate-600 leading-relaxed'
-              >
-                {r}
+        <div className='text-xs font-mono text-slate-400 mb-3 tracking-wider'>DATA INPUT HARIAN</div>
+        <div className='space-y-4'>
+          {INPUT_SECTIONS.map(({ title, keys }) => (
+            <div key={title}>
+              <div className='text-xs font-semibold text-slate-500 mb-2'>{title}</div>
+              <div className='grid sm:grid-cols-2 gap-x-5'>
+                {keys.map((k) => (
+                  <DetailRow key={k} label={formatLabel(k)} value={formatValue(k, details?.[k])} />
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className='bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm text-slate-400 italic'>
-            Rekomendasi belum tersedia
-          </div>
-        )}
-        <div className='mt-3 text-xs text-slate-400 leading-relaxed px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl'>
-          Rekomendasi ini dibuat oleh AI berdasarkan pola data harianmu. Bukan diagnosis medis.
+            </div>
+          ))}
         </div>
       </div>
-
     </div>
   )
 }
@@ -488,7 +480,19 @@ function useRiwayatData() {
 
       setEntries(mapped)
       setChartData(chartData)
-      setStats({ totalLog, avgStress, streak: 0, logWeek })
+      const uniqueDates = [...new Set(mapped.map((e) => e.dateISO).filter(Boolean))]
+      const dateSet = new Set(uniqueDates)
+      let streak = 0
+      const cursor = new Date()
+      cursor.setHours(0,0,0,0)
+      while (true) {
+        const key = cursor.toISOString().split('T')[0]
+        if (!dateSet.has(key)) break
+        streak += 1
+        cursor.setDate(cursor.getDate() - 1)
+      }
+
+      setStats({ totalLog, avgStress, streak, logWeek })
     } catch (err) {
       setError(err.message)
     } finally {
