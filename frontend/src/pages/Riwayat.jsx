@@ -13,7 +13,6 @@ import {
   LuLoader,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
-import { getRiwayat, getRiwayatChart } from '../api/riwayat'
 
 /* ─────────────────────────────────────────────
    Warna & label helper
@@ -24,6 +23,151 @@ const colorMap = {
   amber: { tag: 'bg-amber-50 border-amber-200 text-amber-600', dot: 'bg-amber-400' },
   red:   { tag: 'bg-red-50 border-red-200 text-red-500',       dot: 'bg-red-400' },
   blue:  { tag: 'bg-blue-50 border-blue-200 text-blue-500',    dot: 'bg-blue-400' },
+}
+
+
+const STRESS_COLOR = {
+  Rendah: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-600', bar: 'bg-emerald-400', dot: 'bg-emerald-400' },
+  Sedang: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-500', badge: 'bg-amber-100 text-amber-600', bar: 'bg-amber-400', dot: 'bg-amber-400' },
+  Tinggi: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-500', badge: 'bg-rose-100 text-rose-600', bar: 'bg-rose-400', dot: 'bg-rose-400' },
+}
+
+const STRESS_HEIGHT = { Rendah: 40, Sedang: 80, Tinggi: 120 }
+const DAY_LABEL = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+
+function getLast7Days() {
+  const days = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    days.push(d.toISOString().split('T')[0])
+  }
+  return days
+}
+
+function formatLabel(key) {
+  const map = {
+    durasi_tidur_menit: 'Durasi Tidur (menit)',
+    sering_terbangun_malam: 'Sering Terbangun Malam',
+    mimpi_buruk: 'Mimpi Buruk',
+    screen_sebelum_tidur: 'Screen Sebelum Tidur (menit)',
+    minum_kopi_hari_ini: 'Minum Kopi Hari Ini',
+    merokok: 'Merokok',
+    konsumsi_alkohol: 'Konsumsi Alkohol',
+    deadline_hari_ini: 'Deadline Hari Ini',
+    lembur: 'Lembur',
+    konsentrasi: 'Konsentrasi',
+    suasana_hati: 'Suasana Hati',
+    konflik_interpersonal: 'Konflik Interpersonal',
+    merasa_kesepian: 'Merasa Kesepian',
+    interaksi_sosial: 'Interaksi Sosial',
+    meditasi: 'Meditasi',
+    aktivitas_hobi: 'Aktivitas Hobi',
+    waktu_outdoor: 'Waktu Outdoor',
+  }
+  return map[key] || key
+}
+
+function formatValue(key, val) {
+  if (val === null || val === undefined) return '-'
+  if (key === 'durasi_tidur_menit' || key === 'waktu_outdoor') {
+    const j = Math.floor(val / 60)
+    const m = val % 60
+    const jamStr = j > 0 && m > 0 ? `${j} jam ${m} menit` : j > 0 ? `${j} jam` : `${m} menit`
+    return `${val} menit (${jamStr})`
+  }
+  if (key === 'screen_sebelum_tidur') return `${val} menit`
+  if (key === 'konsentrasi' || key === 'interaksi_sosial') return `${val} / 5`
+  return String(val)
+}
+
+const INPUT_SECTIONS = [
+  { title: 'Pola & kualitas tidur', keys: ['durasi_tidur_menit', 'sering_terbangun_malam', 'mimpi_buruk', 'screen_sebelum_tidur'] },
+  { title: 'Konsumsi zat & substansi', keys: ['minum_kopi_hari_ini', 'merokok', 'konsumsi_alkohol'] },
+  { title: 'Beban & tekanan kerja', keys: ['deadline_hari_ini', 'lembur', 'konsentrasi'] },
+  { title: 'Kondisi hubungan sosial', keys: ['suasana_hati', 'konflik_interpersonal', 'merasa_kesepian', 'interaksi_sosial'] },
+  { title: 'Aktivitas pemulihan diri', keys: ['meditasi', 'aktivitas_hobi', 'waktu_outdoor'] },
+]
+
+function WeeklyChart({ entries }) {
+  const [selected, setSelected] = useState(null)
+  const days = getLast7Days()
+  const dataMap = {}
+  ;(entries || []).forEach((r) => { dataMap[r.dateISO] = r })
+  const today = new Date().toISOString().split('T')[0]
+
+  return (
+    <div className='bg-white border border-slate-100 rounded-3xl p-6 shadow-sm mb-6'>
+      <div className='flex items-center gap-2 mb-5'>
+        <LuTrendingUp size={16} className='text-teal-500' />
+        <h2 className='text-base font-semibold text-slate-700'>Stress Level 7 Hari Terakhir</h2>
+      </div>
+      <div className='flex items-end gap-2 mb-3' style={{ height: '160px' }}>
+        {days.map((date) => {
+          const entry = dataMap[date]
+          const level = entry?.stress?.label
+          const c = level ? STRESS_COLOR[level] : null
+          const isToday = date === today
+          const isSelected = selected?.dateISO === date
+          const d = new Date(date)
+          const dayLabel = DAY_LABEL[d.getDay()]
+          return (
+            <div key={date} className='flex-1 flex flex-col items-center gap-1 cursor-pointer group' onClick={() => entry ? setSelected(isSelected ? null : entry) : null}>
+              <div className='w-full flex items-end' style={{ height: '140px' }}>
+                {level ? (
+                  <div className={`w-full rounded-t-xl transition-all duration-300 ${c.bar} ${isSelected ? 'opacity-100 ring-2 ring-offset-1 ring-teal-400' : 'opacity-80 group-hover:opacity-100'}`} style={{ height: `${STRESS_HEIGHT[level]}px` }} />
+                ) : (
+                  <div className='w-full rounded-t-xl bg-slate-100 opacity-50' style={{ height: '20px' }} />
+                )}
+              </div>
+              <span className={`text-xs font-medium ${isToday ? 'text-teal-500' : 'text-slate-400'}`}>{dayLabel}</span>
+              {isToday && <div className='w-1 h-1 rounded-full bg-teal-400' />}
+            </div>
+          )
+        })}
+      </div>
+      <div className='flex flex-wrap gap-3 mb-4'>
+        {Object.entries(STRESS_COLOR).map(([label, c]) => (
+          <div key={label} className='flex items-center gap-1.5'>
+            <div className={`w-2.5 h-2.5 rounded-full ${c.dot}`} />
+            <span className='text-xs text-slate-400'>{label}</span>
+          </div>
+        ))}
+      </div>
+      {selected && (
+        <div className={`${STRESS_COLOR[selected.stress.label].bg} border ${STRESS_COLOR[selected.stress.label].border} rounded-2xl p-5 mt-2`}>
+          <div className='flex justify-between items-start mb-4'>
+            <div>
+              <div className='text-xs font-mono text-slate-400 mb-1 tracking-wider'>RIWAYAT INPUT</div>
+              <div className='text-sm font-semibold text-slate-700'>{selected.date}</div>
+            </div>
+            <div className='flex items-center gap-2'>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${STRESS_COLOR[selected.stress.label].badge}`}>Stress: {selected.stress.label}</span>
+              <button onClick={() => setSelected(null)} className='w-7 h-7 bg-white/70 border border-slate-200 rounded-full flex items-center justify-center hover:bg-slate-50'>
+                <LuX size={13} className='text-slate-400' />
+              </button>
+            </div>
+          </div>
+          <div className='space-y-3'>
+            {INPUT_SECTIONS.map(({ title, keys }) => (
+              <div key={title}>
+                <div className='text-xs font-semibold text-slate-500 mb-1.5'>{title}</div>
+                <div className='grid grid-cols-2 gap-x-4 gap-y-1 pl-1'>
+                  {keys.map((k) => (
+                    <div key={k} className='flex justify-between items-center'>
+                      <span className='text-xs text-slate-400 font-mono truncate mr-2'>{formatLabel(k)}</span>
+                      <span className='text-xs font-medium text-slate-700 shrink-0'>{formatValue(k, selected.details?.[k])}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {(!entries || !entries.length) && <p className='text-center text-sm text-slate-400 mt-2'>Belum ada riwayat. Mulai isi input harian untuk melihat grafik.</p>}
+    </div>
+  )
 }
 
 function Tag({ color, children }) {
@@ -364,8 +508,7 @@ function useRiwayatData() {
 const STRESS_FILTERS = ['Semua', 'Rendah', 'Sedang', 'Tinggi']
 
 export default function RiwayatPage() {
-  const { entries, chartData, stats, loading } = useRiwayatData()
-  const [period, setPeriod] = useState('8hari') // '8hari' | 'tahun'
+  const { entries, stats, loading } = useRiwayatData()
   const [expandedId, setExpandedId]   = useState(null)
   const [search, setSearch]           = useState('')
   const [filterStress, setFilterStress] = useState('Semua')
@@ -384,113 +527,32 @@ export default function RiwayatPage() {
 
   /* Stat values — '-' selama belum ada data dari backend */
   const totalLog  = stats?.totalLog  ?? '-'
-  const avgStress = stats?.avgStress ?? '-'
   const streak    = stats?.streak    ?? '-'
-  const logWeek   = stats?.logWeek   ?? '-'
 
-  // compute period entries (8 hari / 1 tahun)
-  const periodEntries = (() => {
-    if (!entries) return []
-    if (period === '8hari') {
-      const end = new Date(); end.setHours(23,59,59,999)
-      const start = new Date(end); start.setDate(end.getDate() - 7); start.setHours(0,0,0,0)
-      return entries.filter(e => new Date(e.dateISO) >= start && new Date(e.dateISO) <= end)
-    }
-    if (period === 'tahun') {
-      const end = new Date(); end.setHours(23,59,59,999)
-      const start = new Date(end); start.setFullYear(end.getFullYear() - 1); start.setHours(0,0,0,0)
-      return entries.filter(e => new Date(e.dateISO) >= start && new Date(e.dateISO) <= end)
-    }
-    return entries
-  })()
-
-  // prepare chart data for the selected period
-  const periodChartData = (() => {
-    if (!periodEntries || periodEntries.length === 0) return []
-    if (period === 'tahun') {
-      // aggregate by month
-      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
-      const grouped = {}
-      periodEntries.forEach(e => {
-        const m = new Date(e.dateISO).getMonth()
-        if (!grouped[m]) grouped[m] = []
-        grouped[m].push(e)
-      })
-      return Object.keys(grouped).sort().map(m => {
-        const arr = grouped[m]
-        return {
-          label: months[parseInt(m)],
-          labelShort: months[parseInt(m)].slice(0,3),
-          stressLevel: parseFloat((arr.reduce((a,x) => a + (x.stress?.level ?? 0), 0) / arr.length).toFixed(1)),
-          moodScore: parseFloat((arr.reduce((a,x) => a + (x.mood?.score ?? 0), 0) / arr.length).toFixed(1)),
-          sleepHours: parseFloat((arr.reduce((a,x) => a + (x.details?.durasi_tidur_menit ?? 0), 0) / arr.length / 60).toFixed(1)),
-        }
-      })
-    }
-    // default: daily points
-    return periodEntries.map(e => ({
-      label: `${e.dayName} ${e.dateShort}`,
-      labelShort: e.dateShort,
-      stressLevel: e.stress?.level ?? 0,
-      moodScore: e.mood?.score ?? 0,
-      sleepHours: e.details?.durasi_tidur_menit != null ? parseFloat((e.details.durasi_tidur_menit/60).toFixed(1)) : 0,
-    }))
-  })()
+  const periodEntries = entries ? entries.filter((e) => {
+    const end = new Date(); end.setHours(23, 59, 59, 999)
+    const start = new Date(end); start.setDate(end.getDate() - 7); start.setHours(0, 0, 0, 0)
+    return new Date(e.dateISO) >= start && new Date(e.dateISO) <= end
+  }) : []
 
   return (
     <MainLayout title='Riwayat Log'>
       <div className='max-w-3xl mx-auto'>
 
-        {/* Period selector + Stat cards */}
-        <div className='mb-3 flex items-center gap-2'>
-          <button
-            onClick={() => setPeriod('8hari')}
-            className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${period === '8hari' ? 'bg-teal-500 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}
-          >8 Hari</button>
-          <button
-            onClick={() => setPeriod('tahun')}
-            className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${period === 'tahun' ? 'bg-teal-500 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}
-          >1 Tahun</button>
+        {/* Stat cards */}
+        <div className='grid grid-cols-2 gap-3 mb-6'>
+          <StatCard label='LOG (PERIODE)' value={periodEntries.length ?? 0} sub='7 hari terakhir' color='slate' />
+          <StatCard label='STREAK' value={streak} sub='Hari berturut-turut 🔥' color='teal' />
         </div>
 
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-6'>
-          <StatCard label='LOG (PERIODE)'    value={periodEntries.length ?? 0} sub={period === '8hari' ? '8 hari terakhir' : '12 bulan terakhir'} color='slate' />
-          <StatCard label='RATA-RATA STRESS'  value={avgStress} sub='Level (PSS-based)' color='amber' />
-          <StatCard label='STREAK'            value={streak} sub='Hari berturut-turut 🔥' color='teal' />
-          <StatCard label='LOG MINGGU INI'    value={logWeek} sub='Hari tercatat' color='slate' />
-        </div>
-
-        {/* ── Trend chart ── */}
-        <div className='bg-white border border-slate-100 rounded-3xl p-5 mb-6 shadow-sm'>
-          <div className='flex items-center justify-between mb-1'>
-            <div className='text-sm font-semibold text-slate-700'>Tren Stress {period === '8hari' ? '8 Hari Terakhir' : '12 Bulan Terakhir'}</div>
-            <span className='text-[11px] font-mono text-teal-500 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full'>
-              Skala PSS 1–4
-            </span>
+        {/* Grafik 7 hari dari Dashboard */}
+        {loading ? (
+          <div className='bg-white border border-slate-100 rounded-3xl p-6 shadow-sm mb-6 h-56 flex items-center justify-center'>
+            <LuLoader size={24} className='text-slate-300 animate-spin' />
           </div>
-          <div className='text-xs text-slate-400 mb-1'>Level stress harian</div>
-
-          {loading ? (
-            <div className='h-40 flex items-center justify-center'>
-              <LuLoader size={24} className='text-slate-300 animate-spin' />
-            </div>
-          ) : (
-            <MiniBarChart data={periodChartData} empty={!periodChartData || periodChartData.length === 0} />
-          )}
-
-          <div className='flex gap-3 mt-3 flex-wrap'>
-            {[
-              { label: 'Rendah', cls: 'bg-teal-400' },
-              { label: 'Sedang', cls: 'bg-amber-400' },
-              { label: 'Tinggi', cls: 'bg-red-400' },
-            ].map((l) => (
-              <div key={l.label} className='flex items-center gap-1.5'>
-                <span className={`w-2.5 h-2.5 rounded-sm ${l.cls}`} />
-                <span className='text-[11px] text-slate-500'>{l.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        ) : (
+          <WeeklyChart entries={entries} />
+        )}
 
         {/* ── Log list ── */}
         <div className='bg-white/80 backdrop-blur border border-slate-100 shadow-xl shadow-teal-50 rounded-3xl p-6 md:p-7'>
