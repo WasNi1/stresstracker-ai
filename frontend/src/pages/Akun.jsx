@@ -1,31 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMail, LuCalendar, LuPencil,
   LuBell, LuPalette, LuLock,
   LuLogOut, LuChevronRight,
-  LuTriangleAlert, LuX, LuCheck, LuBriefcase,
+  LuTriangleAlert, LuX, LuCheck,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
 
 /* ─── Toggle ─── */
-function Toggle({ defaultOn = false, checked, onChange }) {
-  const [internalOn, setInternalOn] = useState(defaultOn)
-  const isControlled = checked !== undefined
-  const on = isControlled ? checked : internalOn
-
-  const handle = () => {
-    const next = !on
-    if (!isControlled) setInternalOn(next)
-    onChange?.(next)
-  }
-
+function Toggle({ defaultOn = false, onChange }) {
+  const [on, setOn] = useState(defaultOn)
+  const handle = () => { setOn(!on); onChange?.(!on) }
   return (
     <button
-      type='button'
       onClick={handle}
-      aria-pressed={on}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${on ? 'bg-teal-500' : 'bg-slate-200'}`}
     >
       <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-200 ${on ? 'left-[22px]' : 'left-[3px]'}`} />
@@ -71,6 +61,7 @@ function DeleteModal({ onClose, onConfirm }) {
             <LuTriangleAlert size={18} className='text-red-400' />
           </div>
           <div>
+            <div className='font-semibold text-slate-800'>Hapus semua data?</div>
             <div className='text-xs text-slate-400 mt-0.5'>Tindakan ini tidak bisa dibatalkan</div>
           </div>
         </div>
@@ -80,6 +71,35 @@ function DeleteModal({ onClose, onConfirm }) {
         <div className='flex gap-3'>
           <button onClick={onClose} className='flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm hover:border-slate-300 transition-all'>Batal</button>
           <button onClick={onConfirm} className='flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all'>Ya, hapus</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+/* ─── Logout Modal ─── */
+function LogoutModal({ onClose, onConfirm }) {
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+      <div className='absolute inset-0 bg-black/30 backdrop-blur-sm' onClick={onClose} />
+      <div className='relative bg-white border border-slate-100 rounded-2xl p-6 w-full max-w-sm shadow-2xl'>
+        <button onClick={onClose} className='absolute top-4 right-4 text-slate-300 hover:text-slate-500'><LuX size={18} /></button>
+        <div className='flex items-center gap-3 mb-4'>
+          <div className='w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center'>
+            <LuLogOut size={20} className='text-red-500' />
+          </div>
+          <div>
+            <div className='font-semibold text-slate-800'>Keluar dari akun?</div>
+            <div className='text-xs text-slate-400'>Pastikan kamu memang ingin logout</div>
+          </div>
+        </div>
+        <p className='text-sm text-slate-500 leading-relaxed mb-5'>
+          Kamu akan keluar dari sesi saat ini dan perlu login kembali untuk masuk ke aplikasi.
+        </p>
+        <div className='flex gap-3'>
+          <button onClick={onClose} className='flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm hover:border-slate-300 transition-all'>Batal</button>
+          <button onClick={onConfirm} className='flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all'>Ya, logout</button>
         </div>
       </div>
     </div>
@@ -112,41 +132,6 @@ function PasswordModal({ onClose }) {
   )
 }
 
-
-function getLogStatsFromStorage() {
-  try {
-    const raw = localStorage.getItem('riwayat_harian')
-    const data = raw ? JSON.parse(raw) : []
-    const list = Array.isArray(data) ? data : []
-    const uniqueDates = [...new Set(list.map((item) => item?.tanggal).filter(Boolean))].sort()
-
-    let streak = 0
-    const dateSet = new Set(uniqueDates)
-    const cursor = new Date()
-    cursor.setHours(0, 0, 0, 0)
-
-    while (true) {
-      const key = cursor.toISOString().split('T')[0]
-      if (!dateSet.has(key)) break
-      streak += 1
-      cursor.setDate(cursor.getDate() - 1)
-    }
-
-    return {
-      totalLog: list.length,
-      streak,
-    }
-  } catch {
-    return {
-      totalLog: 0,
-      streak: 0,
-    }
-  }
-}
-
-
-const pekerjaanOptions = ['Mahasiswa', 'Karyawan', 'Freelancer', 'Guru', 'Dokter', 'Wirausaha']
-
 /* ─── Main ─── */
 export default function Akun() {
   const navigate = useNavigate()
@@ -155,10 +140,9 @@ export default function Akun() {
   const [editOpen, setEditOpen] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showLogout, setShowLogout] = useState(false)
   const [saveOk, setSaveOk] = useState(false)
-  const [reminderEnabled, setReminderEnabled] = useState(() => localStorage.getItem('pengingat_input_harian') !== 'false')
-  const [reminderHour, setReminderHour] = useState(() => localStorage.getItem('jam_pengingat_input') || '20:00')
-  const [logStats, setLogStats] = useState(() => getLogStatsFromStorage())
+  const [reminderHour, setReminderHour] = useState('20:00')
   const [lang, setLang] = useState('Indonesia')
 
   const displayName   = user?.name   || user?.nama          || null
@@ -178,21 +162,6 @@ export default function Akun() {
     pekerjaan: displayJob   ?? '',
   })
 
-  useEffect(() => {
-    localStorage.setItem('pengingat_input_harian', String(reminderEnabled))
-  }, [reminderEnabled])
-
-  useEffect(() => {
-    localStorage.setItem('jam_pengingat_input', reminderHour)
-  }, [reminderHour])
-
-  useEffect(() => {
-    const refreshStats = () => setLogStats(getLogStatsFromStorage())
-    refreshStats()
-    window.addEventListener('storage', refreshStats)
-    return () => window.removeEventListener('storage', refreshStats)
-  }, [])
-
   const handleSave = () => {
     const updated = {
       ...user,
@@ -211,6 +180,7 @@ export default function Akun() {
     <MainLayout title='Akun'>
       {showDelete && <DeleteModal onClose={() => setShowDelete(false)} onConfirm={() => { localStorage.clear(); navigate('/login') }} />}
       {showPassword && <PasswordModal onClose={() => setShowPassword(false)} />}
+      {showLogout && <LogoutModal onClose={() => setShowLogout(false)} onConfirm={() => navigate('/login')} />}
 
       <div className='max-w-2xl mx-auto pb-8'>
 
@@ -259,9 +229,10 @@ export default function Akun() {
             {editOpen && (
               <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3'>
                 {[
-                  { label: 'Nama lengkap', key: 'nama',  placeholder: 'Contoh: Budi Santoso', type: 'text'   },
-                  { label: 'Email',        key: 'email', placeholder: 'nama@email.com',        type: 'email'  },
-                  { label: 'Usia',         key: 'usia',  placeholder: 'Contoh: 22',            type: 'number' },
+                  { label: 'Nama lengkap', key: 'nama',      placeholder: 'Contoh: Budi Santoso',    type: 'text'   },
+                  { label: 'Email',        key: 'email',     placeholder: 'nama@email.com',           type: 'email'  },
+                  { label: 'Usia',         key: 'usia',      placeholder: 'Contoh: 22',               type: 'number' },
+                  { label: 'Pekerjaan',    key: 'pekerjaan', placeholder: 'Contoh: Mahasiswa, Guru…', type: 'text'   },
                 ].map((f) => (
                   <div key={f.key}>
                     <label className='text-xs text-slate-400 mb-1 block'>{f.label}</label>
@@ -274,22 +245,6 @@ export default function Akun() {
                     />
                   </div>
                 ))}
-                <div>
-                  <label className='text-xs text-slate-400 mb-1 block'>Pekerjaan</label>
-                  <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-teal-400 transition-all'>
-                    <LuBriefcase size={14} className='text-slate-300 shrink-0' />
-                    <select
-                      value={form.pekerjaan}
-                      onChange={(e) => setForm((prev) => ({ ...prev, pekerjaan: e.target.value }))}
-                      className='w-full bg-transparent outline-none text-sm text-slate-700'
-                    >
-                      <option value=''>Pilih pekerjaan</option>
-                      {pekerjaanOptions.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
                 <div className='col-span-2 flex justify-end gap-2 mt-1'>
                   <button onClick={() => setEditOpen(false)} className='text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'>Batal</button>
                   <button onClick={handleSave} className='text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all flex items-center gap-1.5'>
@@ -302,7 +257,7 @@ export default function Akun() {
 
           {/* Stats */}
           <div className='grid grid-cols-2 gap-3 pb-5 pt-1 border-t border-slate-100'>
-            {[{ num: logStats.totalLog, label: 'Total log' }, { num: logStats.streak, label: 'Streak hari' }].map((s) => (
+            {[{ num: '42', label: 'Total log' }, { num: '7', label: 'Streak hari' }].map((s) => (
               <div key={s.label} className='text-center py-2'>
                 <div className='text-xl font-bold text-teal-500'>{s.num}</div>
                 <div className='text-xs text-slate-400 mt-0.5'>{s.label}</div>
@@ -313,22 +268,15 @@ export default function Akun() {
 
         {/* ── NOTIFIKASI ── */}
         <SectionCard title='NOTIFIKASI' icon={LuBell}>
-          <SettingsItem
-            label='Pengingat input harian'
-            sub='Ingatkan untuk isi log setiap hari'
-            right={<Toggle checked={reminderEnabled} onChange={setReminderEnabled} />}
-          />
+          <SettingsItem label='Pengingat input harian' sub='Ingatkan untuk isi log setiap hari' right={<Toggle defaultOn />} />
           <SettingsItem
             label='Jam pengingat'
-            sub={reminderEnabled ? `${reminderHour} — sebelum tidur` : 'Pengingat input harian sedang mati'}
+            sub={`${reminderHour} — sebelum tidur`}
             right={
-              <input
-                type='time'
-                value={reminderHour}
-                disabled={!reminderEnabled}
-                onChange={(e) => setReminderHour(e.target.value)}
-                className={`bg-slate-50 border border-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-400 transition-all ${reminderEnabled ? 'text-slate-600' : 'text-slate-300 cursor-not-allowed opacity-60'}`}
-              />
+              <select value={reminderHour} onChange={(e) => setReminderHour(e.target.value)}
+                className='bg-slate-50 border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-teal-400 transition-all'>
+                {['18:00', '19:00', '20:00', '21:00', '22:00'].map((h) => <option key={h}>{h}</option>)}
+              </select>
             }
           />
         </SectionCard>
@@ -361,7 +309,7 @@ export default function Akun() {
           <SettingsItem
             label='Keluar dari akun' sub='Sesi kamu akan diakhiri'
             right={
-              <button onClick={() => navigate('/login')} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
+              <button onClick={() => setShowLogout(true)} className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 hover:bg-red-50 transition-all'>
                 <LuLogOut size={12} />Logout
               </button>
             }
