@@ -237,10 +237,24 @@ function Dashboard() {
         <StressHero entry={todayEntry} />
 
         {/* 2. Ringkasan semua input hari ini */}
-        {todayEntry ? (
-          <InputRingkasan entry={todayEntry} />
-        ) : (
-          <div className='bg-teal-50 border border-teal-100 rounded-2xl p-5 text-center'>
+        {todayEntry && <InputRingkasan entry={todayEntry} />}
+
+        <div className='mt-6'>
+          {todayEntry ? (
+            <RekomendasiHarian mode='dashboard' />
+          ) : (
+            <div className='bg-amber-50 border border-amber-200 rounded-2xl p-5'>
+              <h3 className='font-semibold text-amber-700 mb-2'>📋 Rekomendasi Hari Ini</h3>
+              <p className='text-sm text-amber-700 font-medium mb-2'>Belum ada rekomendasi untuk hari ini.</p>
+              <p className='text-sm text-slate-600'>
+                Rekomendasi akan dibuat setelah kamu mengisi input harian sehingga sistem dapat memberikan saran berdasarkan kondisi hari ini.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {!todayEntry && (
+          <div className='bg-teal-50 border border-teal-100 rounded-2xl p-5 text-center mt-4'>
             <p className='text-sm text-teal-600 mb-3'>Kamu belum mengisi input harian hari ini.</p>
             <button
               onClick={() => navigate('/input-harian')}
@@ -250,8 +264,6 @@ function Dashboard() {
             </button>
           </div>
         )}
-
-        <RekomendasiHarian mode='dashboard' />
 
       </div>
     </MainLayout>
