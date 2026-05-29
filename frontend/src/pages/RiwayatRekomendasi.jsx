@@ -92,10 +92,7 @@ function formatLabel(key) {
 function formatValue(key, val) {
   if (val === null || val === undefined) return '-'
   if (key === 'durasi_tidur_menit' || key === 'waktu_outdoor') {
-    const j = Math.floor(val / 60)
-    const m = val % 60
-    const jamStr = j > 0 && m > 0 ? `${j} jam ${m} menit` : j > 0 ? `${j} jam` : `${m} menit`
-    return `${val} menit (${jamStr})`
+    return `${val} menit`
   }
   if (key === 'screen_sebelum_tidur') return `${val} menit`
   if (key === 'konsentrasi' || key === 'interaksi_sosial') return formatSkalaLabel(key, val)
@@ -141,8 +138,8 @@ function WeeklyChart({ entries }) {
                   <div className='w-full rounded-t-xl bg-slate-100 opacity-50' style={{ height: '20px' }} />
                 )}
               </div>
-              <span className={`text-xs font-medium ${isToday ? 'text-teal-500' : 'text-slate-400'}`}>{dayLabel}</span>
-              {isToday && <div className='w-1 h-1 rounded-full bg-teal-400' />}
+              <span className={`text-xs font-medium ${isSelected ? 'text-teal-500' : isToday ? 'text-teal-400' : 'text-slate-400'}`}>{dayLabel}</span>
+              {isSelected && <div className='w-1 h-1 rounded-full bg-teal-400' />}
             </div>
           )
         })}
@@ -664,7 +661,7 @@ export default function RiwayatPage() {
   }) : []
 
   return (
-    <MainLayout title='Riwayat Log'>
+    <MainLayout title='Riwayat'>
       <div className='max-w-3xl mx-auto'>
 
         {/* Stat cards */}
