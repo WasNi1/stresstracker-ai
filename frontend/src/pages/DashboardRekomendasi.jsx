@@ -82,10 +82,7 @@ function formatLabel(key) {
 function formatValue(key, val) {
   if (val === null || val === undefined) return '-'
   if (key === 'durasi_tidur_menit') {
-    const j = Math.floor(val / 60)
-    const m = val % 60
-    const jamStr = j > 0 && m > 0 ? `${j} jam ${m} menit` : j > 0 ? `${j} jam` : `${m} menit`
-    return `${val} menit (${jamStr})`
+    return `${val} menit`
   }
   if (key === 'screen_sebelum_tidur') return `${val} menit`
   if (key === 'waktu_outdoor') {
