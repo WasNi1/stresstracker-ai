@@ -2,10 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import ForgotPassword from '../pages/ForgotPassword'
-import Dashboard from '../pages/Dashboard'
+
 import DashboardRekomendasi from '../pages/DashboardRekomendasi'
 import DailyInput from '../pages/DailyInput'
-import Riwayat from '../pages/Riwayat'
 import RiwayatRekomendasi from '../pages/RiwayatRekomendasi'
 import Akun from '../pages/Akun'
 
@@ -13,14 +12,12 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Dashboard />} />
-        <Route path='/dashboard-rekomendasi' element={<DashboardRekomendasi />} />
+        <Route path='/' element={<DashboardRekomendasi />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/input-harian' element={<DailyInput />} />
-        <Route path='/riwayat' element={<Riwayat />} />
-        <Route path='/riwayat-rekomendasi' element={<RiwayatRekomendasi />} />
+        <Route path='/riwayat' element={<RiwayatRekomendasi />} />
         <Route path='/akun' element={<Akun />} />
       </Routes>
     </BrowserRouter>

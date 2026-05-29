@@ -9,11 +9,9 @@ import {
 } from 'react-icons/lu'
 
 const navItems = [
-  { to: '/',             icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
-  { to: '/dashboard-rekomendasi', icon: <LuLightbulb size={18} />, label: 'Dashboard Rekomendasi' },
+  { to: '/', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
   { to: '/input-harian', icon: <LuClipboardList size={18} />,  label: 'Input Harian' },
-  { to: '/riwayat',      icon: <LuHistory size={18} />,        label: 'Riwayat' },
-  { to: '/riwayat-rekomendasi', icon: <LuLightbulb size={18} />, label: 'Riwayat Rekomendasi' },
+  { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
   { to: '/akun',         icon: <LuUserCog size={18} />,        label: 'Akun' },
 ]
 
