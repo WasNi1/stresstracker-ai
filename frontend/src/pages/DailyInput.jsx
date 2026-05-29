@@ -5,6 +5,7 @@ import {
   LuUsers, LuSave,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
+import ResponseMessage from '../components/ResponseMessage'
 
 /* ─────────────────────────────────
    Util: hitung menit tidur
@@ -163,13 +164,12 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
 }
 
 function SliderRow({ min, max, step = 1, value, onChange, unit }) {
-  const rangeMax = max === undefined ? Math.max(1440, Number(value || 0)) : max
   const handleChange = (e) => {
     let val = Number(e.target.value)
 
     if (isNaN(val)) val = min
     if (val < min) val = min
-    if (max !== undefined && val > max) val = max
+    if (val > max) val = max
 
     val = Math.round(val)
 
@@ -181,7 +181,7 @@ function SliderRow({ min, max, step = 1, value, onChange, unit }) {
       <input
         type='number'
         min={min}
-        {...(max !== undefined ? { max } : {})}
+        max={max}
         step={step}
         value={value}
         onChange={handleChange}
@@ -271,6 +271,7 @@ function DailyInput() {
   const [form, setForm] = useState(INIT)
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState({})
+  const [responseMessage, setResponseMessage] = useState(null)
 
   const set = (key) => (val) => {
     setForm((f) => ({ ...f, [key]: val }))
@@ -287,31 +288,50 @@ function DailyInput() {
     const errs = validate(form, durasi)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
+      setResponseMessage({
+        status: 400,
+        title: 'Input gagal dimasukkan',
+        message: 'Masih ada data yang belum diisi. Lengkapi form terlebih dahulu.',
+      })
       // scroll ke error pertama
       const firstKey = Object.keys(errs)[0]
       document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
-    const tanggal = new Date().toISOString().split('T')[0]
-    const durasi_tidur_menit = durasi ?? 0
-    const stress = hitungStress({ ...form, durasi_tidur_menit })
-    const entry = {
-      tanggal,
-      stressLevel: stress.label,
-      stressNum: stress.num,
-      durasi_tidur_menit,
-      ...form,
+    try {
+      const tanggal = new Date().toISOString().split('T')[0]
+      const durasi_tidur_menit = durasi ?? 0
+      const stress = hitungStress({ ...form, durasi_tidur_menit })
+      const entry = {
+        tanggal,
+        stressLevel: stress.label,
+        stressNum: stress.num,
+        durasi_tidur_menit,
+        ...form,
+      }
+
+      const raw = localStorage.getItem('riwayat_harian')
+      const riwayat = raw ? JSON.parse(raw) : []
+      const filtered = riwayat.filter((r) => r.tanggal !== tanggal)
+      filtered.push(entry)
+      filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+      localStorage.setItem('riwayat_harian', JSON.stringify(filtered.slice(-30)))
+
+      setResponseMessage({
+        status: 200,
+        title: 'Input berhasil dimasukkan',
+        message: 'Data harian kamu berhasil disimpan.',
+      })
+
+      setTimeout(() => navigate('/'), 700)
+    } catch (error) {
+      setResponseMessage({
+        status: 500,
+        title: 'Input gagal dimasukkan',
+        message: 'Terjadi kesalahan saat menyimpan data. Coba ulangi kembali.',
+      })
     }
-
-    const raw = localStorage.getItem('riwayat_harian')
-    const riwayat = raw ? JSON.parse(raw) : []
-    const filtered = riwayat.filter((r) => r.tanggal !== tanggal)
-    filtered.push(entry)
-    filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal))
-    localStorage.setItem('riwayat_harian', JSON.stringify(filtered.slice(-30)))
-
-    navigate('/')
   }
 
   return (
@@ -323,6 +343,16 @@ function DailyInput() {
           <h1 className='text-xl font-bold text-slate-800'>Input Harian</h1>
           <p className='text-sm text-slate-400 mt-1'>Isi data hari ini untuk melihat prediksi stress level kamu.</p>
         </div>
+
+        {responseMessage && (
+          <ResponseMessage
+            status={responseMessage.status}
+            title={responseMessage.title}
+            message={responseMessage.message}
+            onClose={() => setResponseMessage(null)}
+            className='mb-4'
+          />
+        )}
 
         <div className='space-y-3'>
 
@@ -374,7 +404,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi penggunaan layar (HP/laptop) sebelum tidur dalam menit'>
                 Screen time sebelum tidur
               </FieldLabel>
-              <SliderRow min={0} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
+              <SliderRow min={0} max={240} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
             </div>
           </div>
 
@@ -482,7 +512,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
                 Waktu outdoor
               </FieldLabel>
-              <SliderRow min={0} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
+              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
