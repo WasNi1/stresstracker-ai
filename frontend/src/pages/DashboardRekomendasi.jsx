@@ -218,7 +218,7 @@ function Dashboard() {
   const displayName = user?.name || user?.nama || null
 
   return (
-    <MainLayout title='Dashboard Rekomendasi'>
+    <MainLayout title='Dashboard'>
       <div className='max-w-2xl mx-auto'>
 
         {/* Greeting */}
