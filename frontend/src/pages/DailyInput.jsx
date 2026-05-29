@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMoon, LuFlaskConical, LuBriefcase,
@@ -163,17 +163,41 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
   )
 }
 
-function SliderRow({ min, max, step = 1, value, onChange, unit }) {
-  const handleChange = (e) => {
-    let val = Number(e.target.value)
+function SliderRow({ min = 0, step = 1, value, onChange, unit }) {
+  const [displayValue, setDisplayValue] = useState(String(value ?? min))
 
-    if (isNaN(val)) val = min
+  useEffect(() => {
+    setDisplayValue(String(value ?? min))
+  }, [value, min])
+
+  const handleFocus = () => {
+    if (Number(displayValue) === 0) setDisplayValue('')
+  }
+
+  const handleChange = (e) => {
+    const raw = e.target.value
+
+    if (raw === '') {
+      setDisplayValue('')
+      return
+    }
+
+    const normalized = raw.replace(/^0+(?=\d)/, '')
+    let val = Number(normalized)
+
+    if (Number.isNaN(val)) val = min
     if (val < min) val = min
-    if (val > max) val = max
 
     val = Math.round(val)
-
+    setDisplayValue(String(val))
     onChange(val)
+  }
+
+  const handleBlur = () => {
+    if (displayValue === '') {
+      setDisplayValue(String(min))
+      onChange(min)
+    }
   }
 
   return (
@@ -181,10 +205,11 @@ function SliderRow({ min, max, step = 1, value, onChange, unit }) {
       <input
         type='number'
         min={min}
-        max={max}
         step={step}
-        value={value}
+        value={displayValue}
+        onFocus={handleFocus}
         onChange={handleChange}
+        onBlur={handleBlur}
         className='w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 bg-slate-50'
       />
 
@@ -404,7 +429,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi penggunaan layar (HP/laptop) sebelum tidur dalam menit'>
                 Screen time sebelum tidur
               </FieldLabel>
-              <SliderRow min={0} max={240} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
+              <SliderRow min={0} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
             </div>
           </div>
 
@@ -512,7 +537,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
                 Waktu outdoor
               </FieldLabel>
-              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
+              <SliderRow min={0} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
