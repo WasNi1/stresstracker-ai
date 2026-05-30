@@ -198,11 +198,6 @@ export default function RekomendasiHarian({ mode = 'dashboard' }) {
           </ul>
         </div>
       </div>
-
-      <div className='flex items-start gap-2 mt-4 text-[11px] text-slate-400 bg-slate-50 rounded-2xl p-3'>
-        <LuClipboardCheck size={14} className='mt-0.5 shrink-0' />
-        <span>Ini bukan diagnosis medis. Nanti bagian ini bisa diganti response dari backend/data science dengan format JSON rekomendasi.</span>
-      </div>
     </section>
   )
 }
