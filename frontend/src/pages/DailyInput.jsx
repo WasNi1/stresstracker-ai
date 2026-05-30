@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMoon, LuFlaskConical, LuBriefcase,
@@ -163,41 +163,17 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
   )
 }
 
-function SliderRow({ min = 0, step = 1, value, onChange, unit }) {
-  const [displayValue, setDisplayValue] = useState(String(value ?? min))
-
-  useEffect(() => {
-    setDisplayValue(String(value ?? min))
-  }, [value, min])
-
-  const handleFocus = () => {
-    if (Number(displayValue) === 0) setDisplayValue('')
-  }
-
+function SliderRow({ min, max, step = 1, value, onChange, unit }) {
   const handleChange = (e) => {
-    const raw = e.target.value
+    let val = Number(e.target.value)
 
-    if (raw === '') {
-      setDisplayValue('')
-      return
-    }
-
-    const normalized = raw.replace(/^0+(?=\d)/, '')
-    let val = Number(normalized)
-
-    if (Number.isNaN(val)) val = min
+    if (isNaN(val)) val = min
     if (val < min) val = min
+    if (val > max) val = max
 
     val = Math.round(val)
-    setDisplayValue(String(val))
-    onChange(val)
-  }
 
-  const handleBlur = () => {
-    if (displayValue === '') {
-      setDisplayValue(String(min))
-      onChange(min)
-    }
+    onChange(val)
   }
 
   return (
@@ -205,11 +181,10 @@ function SliderRow({ min = 0, step = 1, value, onChange, unit }) {
       <input
         type='number'
         min={min}
+        max={max}
         step={step}
-        value={displayValue}
-        onFocus={handleFocus}
+        value={value}
         onChange={handleChange}
-        onBlur={handleBlur}
         className='w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 bg-slate-50'
       />
 
@@ -309,7 +284,7 @@ function DailyInput() {
     [form.jam_mulai_tidur, form.jam_bangun]
   )
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = validate(form, durasi)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -326,14 +301,76 @@ function DailyInput() {
 
     try {
       const tanggal = new Date().toISOString().split('T')[0]
-      const durasi_tidur_menit = durasi ?? 0
-      const stress = hitungStress({ ...form, durasi_tidur_menit })
-      const entry = {
+
+      // Payload utama mengikuti format backend.
+      const payload = {
         tanggal,
+        tidur: {
+          durasi_tidur_menit: durasi ?? 0,
+          screen_sebelum_tidur: Number(form.screen_sebelum_tidur),
+          sering_terbangun_malam: form.sering_terbangun_malam,
+          mimpi_buruk: form.mimpi_buruk,
+        },
+        gayaHidup: {
+          waktu_outdoor: Number(form.waktu_outdoor),
+          minum_kopi_hari_ini: form.minum_kopi_hari_ini,
+          merokok: form.merokok,
+          konsumsi_alkohol: form.konsumsi_alkohol,
+          aktivitas_hobi: form.aktivitas_hobi,
+        },
+        produktivitas: {
+          deadline_hari_ini: form.deadline_hari_ini,
+          lembur: form.lembur,
+          konsentrasi: Number(form.konsentrasi),
+        },
+        mentalSosial: {
+          suasana_hati: form.suasana_hati,
+          konflik_interpersonal: form.konflik_interpersonal,
+          merasa_kesepian: form.merasa_kesepian,
+          meditasi: form.meditasi,
+          interaksi_sosial: Number(form.interaksi_sosial),
+        },
+      }
+
+      const durasi_tidur_menit = payload.tidur.durasi_tidur_menit
+      const stress = hitungStress({
+        ...form,
+        durasi_tidur_menit,
+        screen_sebelum_tidur: payload.tidur.screen_sebelum_tidur,
+        waktu_outdoor: payload.gayaHidup.waktu_outdoor,
+        konsentrasi: payload.produktivitas.konsentrasi,
+        interaksi_sosial: payload.mentalSosial.interaksi_sosial,
+      })
+
+      // Untuk sementara localStorage tetap menyimpan format backend + format flat.
+      // Format flat dibutuhkan agar Dashboard, Riwayat, dan Akun tetap bisa membaca
+      // total log, streak, chart, dan detail tanpa harus menunggu API backend aktif.
+      const entry = {
+        ...payload,
         stressLevel: stress.label,
         stressNum: stress.num,
-        durasi_tidur_menit,
-        ...form,
+
+        // versi flat untuk kompatibilitas halaman lama
+        durasi_tidur_menit: payload.tidur.durasi_tidur_menit,
+        screen_sebelum_tidur: payload.tidur.screen_sebelum_tidur,
+        sering_terbangun_malam: payload.tidur.sering_terbangun_malam,
+        mimpi_buruk: payload.tidur.mimpi_buruk,
+
+        waktu_outdoor: payload.gayaHidup.waktu_outdoor,
+        minum_kopi_hari_ini: payload.gayaHidup.minum_kopi_hari_ini,
+        merokok: payload.gayaHidup.merokok,
+        konsumsi_alkohol: payload.gayaHidup.konsumsi_alkohol,
+        aktivitas_hobi: payload.gayaHidup.aktivitas_hobi,
+
+        deadline_hari_ini: payload.produktivitas.deadline_hari_ini,
+        lembur: payload.produktivitas.lembur,
+        konsentrasi: payload.produktivitas.konsentrasi,
+
+        suasana_hati: payload.mentalSosial.suasana_hati,
+        konflik_interpersonal: payload.mentalSosial.konflik_interpersonal,
+        merasa_kesepian: payload.mentalSosial.merasa_kesepian,
+        meditasi: payload.mentalSosial.meditasi,
+        interaksi_sosial: payload.mentalSosial.interaksi_sosial,
       }
 
       const raw = localStorage.getItem('riwayat_harian')
@@ -429,7 +466,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi penggunaan layar (HP/laptop) sebelum tidur dalam menit'>
                 Screen time sebelum tidur
               </FieldLabel>
-              <SliderRow min={0} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
+              <SliderRow min={0} max={240} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
             </div>
           </div>
 
@@ -537,7 +574,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
                 Waktu outdoor
               </FieldLabel>
-              <SliderRow min={0} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
+              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
