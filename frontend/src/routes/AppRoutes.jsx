@@ -12,8 +12,8 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<DashboardRekomendasi />} />
-        <Route path='/login' element={<Login />} />
+        <Route path='/dashboard' element={<DashboardRekomendasi />} />
+        <Route path='/' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/input-harian' element={<DailyInput />} />
