@@ -13,6 +13,9 @@ import {
   LuLoader,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
+import { fetchCheckinEntries } from '../utils/checkinData'
+import { getCheckins } from '../api/checkin'
+import { mapCheckinsToLocalEntries } from '../utils/checkinMapper'
 
 /* ─────────────────────────────────────────────
    Warna & label helper
@@ -537,21 +540,18 @@ function useRiwayatData() {
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
 
-  const fetchData = () => {
+  const fetchData = async () => {
     setLoading(true)
     setError(null)
     try {
-      const raw = localStorage.getItem('riwayat_harian')
-      if (!raw) {
-        // no local data yet
+      const riwayat = await fetchCheckinEntries({ useCacheFallback: true })
+      if (!riwayat.length) {
         setEntries([])
         setChartData([])
         setStats({ totalLog: 0, avgStress: 0, streak: 0, logWeek: 0 })
         setLoading(false)
         return
       }
-
-      const riwayat = JSON.parse(raw)
 
       // normalize entries to UI shape used in this page
       const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
