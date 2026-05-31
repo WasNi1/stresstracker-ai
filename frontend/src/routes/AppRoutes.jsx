@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
 import ForgotPassword from '../pages/ForgotPassword'
-
+import VerifyOtp from '../pages/VerifyOtp'
 import DashboardRekomendasi from '../pages/DashboardRekomendasi'
 import DailyInput from '../pages/DailyInput'
 import RiwayatRekomendasi from '../pages/RiwayatRekomendasi'
