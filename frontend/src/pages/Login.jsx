@@ -64,16 +64,17 @@ function Login() {
         password,
       })
 
-      const accessToken = response.data?.data?.accessToken
-      const refreshToken = response.data?.data?.refreshToken
+      const body = response.data
+      const accessToken = body?.data?.accessToken
+      const refreshToken = body?.data?.refreshToken
 
-      if (accessToken) {
-        localStorage.setItem('accessToken', accessToken)
-        localStorage.setItem('token', accessToken)
+      if (body?.status !== 'success' || !accessToken || !refreshToken) {
+        throw new Error(body?.message || 'Email/username atau password salah')
       }
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken)
-      }
+
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('token', accessToken)
+      localStorage.setItem('refreshToken', refreshToken)
 
       try {
         const meResponse = await getLoggedUser()
@@ -103,6 +104,8 @@ function Login() {
         setError(err.response.data.message)
       } else if (err.message === 'Network Error') {
         setError('Tidak bisa terhubung ke server. Cek koneksi internet Anda.')
+      } else if (err.message) {
+        setError(err.message)
       } else {
         setError('Login gagal, coba lagi nanti')
       }
