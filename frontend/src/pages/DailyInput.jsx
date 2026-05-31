@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMoon, LuFlaskConical, LuBriefcase,
@@ -164,17 +164,43 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
   )
 }
 
-function SliderRow({ min, max, step = 1, value, onChange, unit }) {
+function SliderRow({ min = 0, max, step = 1, value, onChange, unit }) {
+  const [inputValue, setInputValue] = useState(String(value))
+
+  useEffect(() => {
+    setInputValue(String(value))
+  }, [value])
+
+  const handleFocus = () => {
+    if (Number(inputValue) === 0) {
+      setInputValue('')
+    }
+  }
+
   const handleChange = (e) => {
-    let val = Number(e.target.value)
+    const raw = e.target.value
 
-    if (isNaN(val)) val = min
-    if (val < min) val = min
+    if (raw === '') {
+      setInputValue('')
+      return
+    }
+
+    let val = Number(raw)
+
+    if (Number.isNaN(val)) return
+
     if (val > max) val = max
+    if (val < min) val = min
 
-    val = Math.round(val)
-
+    setInputValue(String(val))
     onChange(val)
+  }
+
+  const handleBlur = () => {
+    if (inputValue === '') {
+      setInputValue(String(min))
+      onChange(min)
+    }
   }
 
   return (
@@ -184,8 +210,10 @@ function SliderRow({ min, max, step = 1, value, onChange, unit }) {
         min={min}
         max={max}
         step={step}
-        value={value}
+        value={inputValue}
+        onFocus={handleFocus}
         onChange={handleChange}
+        onBlur={handleBlur}
         className='w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 bg-slate-50'
       />
 
