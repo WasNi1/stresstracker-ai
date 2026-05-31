@@ -11,6 +11,8 @@ import {
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
 import RekomendasiHarian from '../components/RekomendasiHarian'
+import { getCheckins } from '../api/checkin'
+import { mapCheckinsToLocalEntries } from '../utils/checkinMapper'
 
 /* ─────────────────────────────────────────────
    Helpers
@@ -206,8 +208,25 @@ function Dashboard() {
   const today = new Date().toISOString().split('T')[0]
 
   useEffect(() => {
-    const raw = localStorage.getItem('riwayat_harian')
-    if (raw) setRiwayat(JSON.parse(raw))
+    const loadCheckins = async () => {
+      const raw = localStorage.getItem('riwayat_harian')
+      if (raw) setRiwayat(JSON.parse(raw))
+
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token')
+      if (!token) return
+
+      try {
+        const response = await getCheckins()
+        const checkins = response.data?.data?.checkin || []
+        const mapped = mapCheckinsToLocalEntries(checkins)
+        localStorage.setItem('riwayat_harian', JSON.stringify(mapped.slice(-30)))
+        setRiwayat(mapped)
+      } catch {
+        // Jika API belum aktif, data lokal tetap digunakan.
+      }
+    }
+
+    loadCheckins()
   }, [])
 
   const todayEntry = riwayat.find((r) => r.tanggal === today) ?? null
