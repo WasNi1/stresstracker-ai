@@ -19,6 +19,7 @@ function AppRoutes() {
         <Route path='/input-harian' element={<DailyInput />} />
         <Route path='/riwayat' element={<RiwayatRekomendasi />} />
         <Route path='/akun' element={<Akun />} />
+        <Route path='/verify-otp' element={<VerifyOtp />} />
       </Routes>
     </BrowserRouter>
   )
