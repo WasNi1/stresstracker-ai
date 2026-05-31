@@ -28,11 +28,21 @@ function VerifyOtp() {
 
     try {
       setLoading(true)
-      const response = await verifyOtp({ email: email.trim().toLowerCase(), otpCode: otpCode.trim() })
-      setSuccess(response.data?.message || 'Verifikasi berhasil!')
-      setTimeout(() => navigate('/', { replace: true }), 900)
+      const response = await verifyOtp({
+        email: email.trim().toLowerCase(),
+        otpCode: otpCode.trim(),
+      })
+      const body = response.data
+
+      if (body?.status !== 'success' && body?.code !== 200) {
+        throw new Error(body?.message || 'Verifikasi OTP gagal. Periksa kode OTP kamu.')
+      }
+
+      setSuccess(body?.message || 'Verifikasi berhasil! Silakan login.')
+      setTimeout(() => navigate('/login', { replace: true }), 900)
     } catch (err) {
-      setError(err.response?.data?.message || 'Verifikasi OTP gagal. Periksa kode OTP kamu.')
+      const backendMessage = err.response?.data?.message
+      setError(backendMessage || err.message || 'Verifikasi OTP gagal. Periksa kode OTP kamu.')
     } finally {
       setLoading(false)
     }
@@ -93,7 +103,7 @@ function VerifyOtp() {
 
         <p className='text-center text-sm text-slate-400 mt-6'>
           Sudah terverifikasi?{' '}
-          <Link to='/dashboard' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
+          <Link to='/login' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
         </p>
       </div>
     </div>
