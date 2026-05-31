@@ -8,7 +8,7 @@ import {
 } from 'react-icons/lu'
 
 const navItems = [
-  { to: '/', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
+  { to: '/dashboard', icon: <LuLayoutDashboard size={18} />, label: 'Dashboard' },
   { to: '/input-harian', icon: <LuClipboardList size={20} />,  label: 'Input' },
   { to: '/riwayat', icon: <LuHistory size={18} />, label: 'Riwayat' },
   { to: '/akun',         icon: <LuUserCog size={20} />,        label: 'Akun' },

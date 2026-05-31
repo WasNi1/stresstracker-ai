@@ -93,7 +93,7 @@ function Login() {
         // Token sudah tersimpan; profile tetap bisa diambil lagi di halaman Akun.
       }
 
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       if (err.response?.status === 401) {
         setError('Email/username atau password salah')
