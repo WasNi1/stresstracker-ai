@@ -30,7 +30,7 @@ function VerifyOtp() {
       setLoading(true)
       const response = await verifyOtp({ email: email.trim().toLowerCase(), otpCode: otpCode.trim() })
       setSuccess(response.data?.message || 'Verifikasi berhasil!')
-      setTimeout(() => navigate('/dashboard', { replace: true }), 900)
+      setTimeout(() => navigate('/', { replace: true }), 900)
     } catch (err) {
       setError(err.response?.data?.message || 'Verifikasi OTP gagal. Periksa kode OTP kamu.')
     } finally {
