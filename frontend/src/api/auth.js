@@ -1,7 +1,7 @@
 import api from './axios'
 
 export const registerUser = (payload) => {
-  return api.post('/users', payload)
+  return api.post('/register', payload)
 }
 
 export const verifyOtp = (payload) => {
