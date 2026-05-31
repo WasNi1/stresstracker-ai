@@ -6,6 +6,7 @@ import {
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import ResponseMessage from '../components/ResponseMessage'
+import { addCheckin } from '../api/checkin'
 
 /* ─────────────────────────────────
    Util: hitung menit tidur
@@ -373,6 +374,11 @@ function DailyInput() {
         interaksi_sosial: payload.mentalSosial.interaksi_sosial,
       }
 
+      // Kirim ke backend sesuai kontrak API: POST /checkins
+      const response = await addCheckin(payload)
+
+      // Simpan sementara ke localStorage agar Dashboard, Riwayat, dan Akun
+      // tetap menampilkan data selama halaman lain belum sepenuhnya memakai API.
       const raw = localStorage.getItem('riwayat_harian')
       const riwayat = raw ? JSON.parse(raw) : []
       const filtered = riwayat.filter((r) => r.tanggal !== tanggal)
@@ -381,17 +387,20 @@ function DailyInput() {
       localStorage.setItem('riwayat_harian', JSON.stringify(filtered.slice(-30)))
 
       setResponseMessage({
-        status: 200,
+        status: response?.status || 200,
         title: 'Input berhasil dimasukkan',
-        message: 'Data harian kamu berhasil disimpan.',
+        message: response?.data?.message || 'Check-in harian berhasil disimpan.',
       })
 
       setTimeout(() => navigate('/'), 700)
     } catch (error) {
+      const status = error.response?.status || 500
+      const message = error.response?.data?.message || 'Terjadi kesalahan saat menyimpan check-in. Coba ulangi kembali.'
+
       setResponseMessage({
-        status: 500,
+        status,
         title: 'Input gagal dimasukkan',
-        message: 'Terjadi kesalahan saat menyimpan data. Coba ulangi kembali.',
+        message,
       })
     }
   }
