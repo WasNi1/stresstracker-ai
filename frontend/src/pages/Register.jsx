@@ -99,7 +99,7 @@ function Register() {
       username: form.username.trim(),
       password: form.password,
       fullname: form.fullname.trim(),
-      birthDate: form.birthDate,
+      birthDate: form.birthDate.trim(),
       jenisKelamin: form.jenisKelamin,
       pekerjaan: form.pekerjaan,
     }
@@ -107,12 +107,19 @@ function Register() {
     try {
       setLoading(true)
       const response = await registerUser(payload)
-      setSuccess(response.data?.message || 'Registrasi berhasil. Silakan cek email untuk kode verifikasi.')
+      const body = response.data
+
+      if (body?.status !== 'success' && body?.code !== 201) {
+        throw new Error(body?.message || 'Registrasi gagal. Coba ulangi kembali.')
+      }
+
+      setSuccess(body?.message || 'Registrasi berhasil. Silakan cek email untuk kode verifikasi.')
       setTimeout(() => {
         navigate('/verify-otp', { state: { email: payload.email }, replace: true })
       }, 900)
     } catch (err) {
-      setError(err.response?.data?.message || 'Registrasi gagal. Coba ulangi kembali.')
+      const backendMessage = err.response?.data?.message
+      setError(backendMessage || err.message || 'Registrasi gagal. Coba ulangi kembali.')
     } finally {
       setLoading(false)
     }
@@ -237,7 +244,7 @@ function Register() {
 
             <p className='text-center text-sm text-slate-400 mt-6'>
               Sudah punya akun?{' '}
-              <Link to='/dashboard' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
+              <Link to='/login' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
             </p>
           </div>
         </div>
