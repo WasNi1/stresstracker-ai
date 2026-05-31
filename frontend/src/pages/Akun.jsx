@@ -8,6 +8,8 @@ import {
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
+import { getLoggedUser, logoutUser } from '../api/auth'
+import { calculateCheckinStats, fetchCheckinEntries, getCachedCheckinEntries } from '../utils/checkinData'
 
 function Toggle({ defaultOn = false, onChange }) {
   const [on, setOn] = useState(defaultOn)
@@ -192,11 +194,12 @@ function PasswordModal({ onClose }) {
 }
 
 const pekerjaanOptions = [
-  'Mahasiswa',
-  'Karyawan',
+  'Dokter',
   'Freelancer',
   'Guru',
-  'Dokter',
+  'Irt',
+  'Karyawan',
+  'Mahasiswa',
   'Wirausaha',
 ]
 
@@ -217,7 +220,7 @@ export default function Akun() {
     () => localStorage.getItem('jam_pengingat_input') || '20:00'
   )
 
-  const [logStats, setLogStats] = useState(() => getLogStatsFromStorage())
+  const [logStats, setLogStats] = useState(() => calculateCheckinStats(getCachedCheckinEntries()))
   const [lang, setLang] = useState('Indonesia')
 
   const displayName = user?.name || user?.nama || null
@@ -237,6 +240,33 @@ export default function Akun() {
   })
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token')
+      if (!token) return
+
+      try {
+        const response = await getLoggedUser()
+        const loggedUser = response.data?.data?.user
+        if (!loggedUser) return
+
+        updateUser({
+          ...loggedUser,
+          name: loggedUser.fullname,
+          nama: loggedUser.fullname,
+          gender: loggedUser.jenisKelamin,
+          jenis_kelamin: loggedUser.jenisKelamin,
+          job: loggedUser.pekerjaan,
+          pekerjaan: loggedUser.pekerjaan,
+        })
+      } catch {
+        // Profil tetap memakai data localStorage jika /me belum bisa diakses.
+      }
+    }
+
+    fetchProfile()
+  }, [])
+
+  useEffect(() => {
     localStorage.setItem('pengingat_input_harian', String(reminderEnabled))
   }, [reminderEnabled])
 
@@ -245,8 +275,13 @@ export default function Akun() {
   }, [reminderHour])
 
   useEffect(() => {
-    const refreshStats = () => {
-      setLogStats(getLogStatsFromStorage())
+    const refreshStats = async () => {
+      try {
+        const entries = await fetchCheckinEntries()
+        setLogStats(calculateCheckinStats(entries))
+      } catch {
+        setLogStats(calculateCheckinStats(getCachedCheckinEntries()))
+      }
     }
 
     refreshStats()
@@ -277,9 +312,24 @@ export default function Akun() {
     setTimeout(() => setSaveOk(false), 2500)
   }
 
-  const handleLogout = () => {
-    setShowLogout(false)
-    navigate('/login')
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken')
+
+    try {
+      if (refreshToken) {
+        await logoutUser(refreshToken)
+      }
+    } catch {
+      // Tetap logout lokal walaupun request logout ke backend gagal.
+    } finally {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+      updateUser(null)
+      setShowLogout(false)
+      navigate('/login')
+    }
   }
 
   return (
