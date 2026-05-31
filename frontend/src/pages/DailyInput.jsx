@@ -165,11 +165,11 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
 }
 
 function SliderRow({ min = 0, max, step = 1, value, onChange, unit }) {
-  const [inputValue, setInputValue] = useState(String(value))
+  const [inputValue, setInputValue] = useState(String(value ?? min))
 
   useEffect(() => {
-    setInputValue(String(value))
-  }, [value])
+    setInputValue(String(value ?? min))
+  }, [value, min])
 
   const handleFocus = () => {
     if (Number(inputValue) === 0) {
@@ -185,13 +185,14 @@ function SliderRow({ min = 0, max, step = 1, value, onChange, unit }) {
       return
     }
 
-    let val = Number(raw)
+    const normalized = raw.replace(/^0+(?=\d)/, '')
+    let val = Number(normalized)
 
     if (Number.isNaN(val)) return
-
-    if (val > max) val = max
     if (val < min) val = min
+    if (max !== undefined && val > max) val = max
 
+    val = Math.round(val)
     setInputValue(String(val))
     onChange(val)
   }
@@ -420,7 +421,7 @@ function DailyInput() {
         message: response?.data?.message || 'Check-in harian berhasil disimpan.',
       })
 
-      setTimeout(() => navigate('/'), 700)
+      setTimeout(() => navigate('/dashboard'), 700)
     } catch (error) {
       const status = error.response?.status || 500
       const message = error.response?.data?.message || 'Terjadi kesalahan saat menyimpan check-in. Coba ulangi kembali.'
