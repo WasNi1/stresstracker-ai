@@ -237,7 +237,7 @@ function Register() {
 
             <p className='text-center text-sm text-slate-400 mt-6'>
               Sudah punya akun?{' '}
-              <Link to='/login' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
+              <Link to='/' className='text-teal-500 hover:text-teal-600 font-semibold'>Masuk</Link>
             </p>
           </div>
         </div>

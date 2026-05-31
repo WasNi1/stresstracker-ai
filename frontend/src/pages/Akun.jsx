@@ -328,7 +328,7 @@ export default function Akun() {
       localStorage.removeItem('user')
       updateUser(null)
       setShowLogout(false)
-      navigate('/login')
+      navigate('/')
     }
   }
 
@@ -339,7 +339,7 @@ export default function Akun() {
           onClose={() => setShowDelete(false)}
           onConfirm={() => {
             localStorage.clear()
-            navigate('/login')
+            navigate('/')
           }}
         />
       )}

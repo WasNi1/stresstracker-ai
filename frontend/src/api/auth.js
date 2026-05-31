@@ -9,7 +9,7 @@ export const verifyOtp = (payload) => {
 }
 
 export const loginUser = (payload) => {
-  return api.post('/login', payload)
+  return api.post('/', payload)
 }
 
 export const getLoggedUser = () => {

@@ -83,7 +83,7 @@ function ForgotPassword() {
               <span className='text-teal-600 font-bold text-xl'>StressTracker AI</span>
             </div>
 
-            <Link to='/login' className='inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-teal-500 transition-colors mb-6'>
+            <Link to='/' className='inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-teal-500 transition-colors mb-6'>
               <LuArrowLeft size={16} />
               Kembali ke login
             </Link>
@@ -149,7 +149,7 @@ function ForgotPassword() {
 
             <p className='text-center text-sm text-slate-400 mt-6'>
               Sudah ingat password?{' '}
-              <Link to='/login' className='text-teal-500 hover:text-teal-600 font-semibold'>
+              <Link to='/' className='text-teal-500 hover:text-teal-600 font-semibold'>
                 Masuk sekarang
               </Link>
             </p>
