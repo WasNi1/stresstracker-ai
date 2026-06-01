@@ -23,3 +23,16 @@ export const refreshAccessToken = (refreshToken) => {
 export const logoutUser = (refreshToken) => {
   return api.delete('/authentications', { data: { refreshToken } })
 }
+
+
+export const requestPasswordOtp = (payload) => {
+  return api.post('/forgot-password', payload)
+}
+
+export const resetPassword = (payload) => {
+  return api.post('/reset-password', payload)
+}
+
+export const changePassword = (payload) => {
+  return api.put('/change-password', payload)
+}

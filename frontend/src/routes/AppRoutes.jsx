@@ -3,6 +3,7 @@ import Login from '../pages/Login'
 import Register from '../pages/Register'
 import ForgotPassword from '../pages/ForgotPassword'
 import VerifyOtp from '../pages/VerifyOtp'
+import ResetPassword from '../pages/ResetPassword'
 import DashboardRekomendasi from '../pages/DashboardRekomendasi'
 import DailyInput from '../pages/DailyInput'
 import RiwayatRekomendasi from '../pages/RiwayatRekomendasi'
@@ -70,6 +71,15 @@ function AppRoutes() {
           element={
             <GuestRoute>
               <VerifyOtp />
+            </GuestRoute>
+          }
+        />
+
+        <Route
+          path='/reset-password'
+          element={
+            <GuestRoute>
+              <ResetPassword />
             </GuestRoute>
           }
         />

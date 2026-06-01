@@ -8,7 +8,7 @@ import {
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
-import { getLoggedUser, logoutUser } from '../api/auth'
+import { changePassword, getLoggedUser, logoutUser } from '../api/auth'
 import { calculateCheckinStats, fetchCheckinEntries, getCachedCheckinEntries } from '../utils/checkinData'
 
 function Toggle({ defaultOn = false, onChange }) {
@@ -156,12 +156,21 @@ function LogoutModal({ onClose, onConfirm }) {
   )
 }
 
+
 function PasswordModal({ onClose }) {
+  const [form, setForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
   const [visiblePasswords, setVisiblePasswords] = useState({
     oldPassword: false,
     newPassword: false,
     confirmPassword: false,
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const passwordFields = [
     { key: 'oldPassword', label: 'Password lama' },
@@ -173,15 +182,68 @@ function PasswordModal({ onClose }) {
     setVisiblePasswords((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
+  const setField = (key) => (e) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    setError('')
+    setSuccess('')
+  }
+
+  const handleSubmit = async () => {
+    setError('')
+    setSuccess('')
+
+    if (!form.oldPassword) {
+      setError('Password lama wajib diisi')
+      return
+    }
+
+    if (!form.newPassword || form.newPassword.length < 6) {
+      setError('Password baru minimal 6 karakter')
+      return
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      setError('Konfirmasi password baru tidak sama')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await changePassword({
+        oldPassword: form.oldPassword,
+        newPassword: form.newPassword,
+      })
+      setSuccess(response.data?.message || 'Password berhasil diperbarui!')
+      setForm({ oldPassword: '', newPassword: '', confirmPassword: '' })
+      setTimeout(onClose, 900)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Password gagal diperbarui. Periksa password lama kamu.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-      <div className='absolute inset-0 bg-black/30 backdrop-blur-sm' onClick={onClose} />
+      <div className='absolute inset-0 bg-black/30 backdrop-blur-sm' onClick={loading ? undefined : onClose} />
       <div className='relative bg-white border border-slate-100 rounded-2xl p-6 w-full max-w-sm shadow-2xl'>
-        <button onClick={onClose} className='absolute top-4 right-4 text-slate-300 hover:text-slate-500'>
+        <button onClick={onClose} disabled={loading} className='absolute top-4 right-4 text-slate-300 hover:text-slate-500 disabled:opacity-50'>
           <LuX size={18} />
         </button>
 
         <div className='font-semibold text-slate-800 mb-4'>Ubah Password</div>
+
+        {error && (
+          <div className='mb-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600'>
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className='mb-4 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-xs text-teal-600'>
+            {success}
+          </div>
+        )}
 
         <div className='space-y-3 mb-5'>
           {passwordFields.map((field) => (
@@ -190,13 +252,17 @@ function PasswordModal({ onClose }) {
               <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-teal-400 transition-all'>
                 <input
                   type={visiblePasswords[field.key] ? 'text' : 'password'}
+                  value={form[field.key]}
+                  onChange={setField(field.key)}
+                  disabled={loading}
                   placeholder='••••••••'
-                  className='w-full bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300'
+                  className='w-full bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 disabled:opacity-50'
                 />
                 <button
                   type='button'
                   onClick={() => togglePassword(field.key)}
-                  className='text-slate-300 hover:text-teal-500 transition-colors'
+                  disabled={loading}
+                  className='text-slate-300 hover:text-teal-500 transition-colors disabled:opacity-50'
                   aria-label={visiblePasswords[field.key] ? `Sembunyikan ${field.label}` : `Tampilkan ${field.label}`}
                 >
                   {visiblePasswords[field.key] ? <LuEyeOff size={16} /> : <LuEye size={16} />}
@@ -207,17 +273,18 @@ function PasswordModal({ onClose }) {
         </div>
 
         <div className='flex gap-3'>
-          <button onClick={onClose} className='flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm transition-all'>
+          <button onClick={onClose} disabled={loading} className='flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm transition-all disabled:opacity-50'>
             Batal
           </button>
-          <button onClick={onClose} className='flex-1 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold transition-all'>
-            Simpan
+          <button onClick={handleSubmit} disabled={loading} className='flex-1 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold transition-all disabled:bg-slate-300 disabled:cursor-not-allowed'>
+            {loading ? 'Menyimpan...' : 'Simpan'}
           </button>
         </div>
       </div>
     </div>
   )
 }
+
 
 const pekerjaanOptions = [
   'Dokter',

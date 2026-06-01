@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { LuHeart, LuMail, LuArrowLeft, LuSend, LuCircleCheck, LuShieldCheck } from 'react-icons/lu'
-import axios from '../api/axios'
+import { requestPasswordOtp } from '../api/auth'
 
 function ForgotPassword() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -24,11 +25,12 @@ function ForgotPassword() {
     setLoading(true)
 
     try {
-      await axios.post('/api/auth/forgot-password', {
-        email: email.toLowerCase(),
+      const response = await requestPasswordOtp({
+        email: email.trim().toLowerCase(),
       })
 
-      setMessage('Link reset password sudah dikirim. Silakan cek email Anda.')
+      setMessage(response.data?.message || 'Kode OTP untuk reset password telah dikirim ke email Anda.')
+      setTimeout(() => navigate('/reset-password', { state: { email: email.trim().toLowerCase() } }), 900)
     } catch (err) {
       console.error('Forgot password error:', err)
 
@@ -37,7 +39,7 @@ function ForgotPassword() {
       } else if (err.message === 'Network Error') {
         setError('Tidak bisa terhubung ke server. Cek koneksi internet Anda.')
       } else {
-        setMessage('Jika email terdaftar, link reset password akan dikirim ke email tersebut.')
+        setMessage('Jika email terdaftar, kode OTP reset password akan dikirim ke email tersebut.')
       }
     } finally {
       setLoading(false)
@@ -68,7 +70,7 @@ function ForgotPassword() {
             Tenang, akunmu<br />bisa dipulihkan
           </h2>
           <p className='text-teal-100 mt-4 text-lg leading-relaxed'>
-            Masukkan email akunmu dan kami akan membantu mengirimkan instruksi reset password.
+            Masukkan email akunmu dan kami akan membantu mengirimkan kode OTP reset password.
           </p>
         </div>
 
@@ -90,7 +92,7 @@ function ForgotPassword() {
 
             <h1 className='text-3xl font-bold text-slate-800'>Lupa password?</h1>
             <p className='text-slate-400 mt-2 text-sm leading-relaxed'>
-              Masukkan email yang terhubung dengan akun Anda. Kami akan mengirimkan link untuk mengatur ulang password.
+              Masukkan email yang terhubung dengan akun Anda. Kami akan mengirimkan kode OTP untuk mengatur ulang password.
             </p>
 
             {error && (
@@ -140,7 +142,7 @@ function ForgotPassword() {
                   </>
                 ) : (
                   <>
-                    Kirim link reset
+                    Kirim kode OTP
                     <LuSend size={16} />
                   </>
                 )}
