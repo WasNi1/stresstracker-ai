@@ -172,13 +172,13 @@ function Register() {
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-slate-600'>Nama lengkap</label>
                   <InputWrap icon={LuUser} error={submitted && !form.fullname.trim()}>
-                    <input type='text' placeholder='Nova Wijaya' value={form.fullname} onChange={set('fullname')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
+                    <input type='text' placeholder='masukkan nama lengkap' value={form.fullname} onChange={set('fullname')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
                   </InputWrap>
                 </div>
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-slate-600'>Email</label>
                   <InputWrap icon={LuMail} error={submitted && (!form.email || !/\S+@\S+\.\S+/.test(form.email))}>
-                    <input type='email' placeholder='nama@email.com' value={form.email} onChange={set('email')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
+                    <input type='email' placeholder='masukkan email' value={form.email} onChange={set('email')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
                   </InputWrap>
                 </div>
               </div>
@@ -187,7 +187,7 @@ function Register() {
                 <div className='flex flex-col gap-1.5'>
                   <label className='text-sm font-medium text-slate-600'>Username</label>
                   <InputWrap icon={LuAtSign} error={submitted && !form.username.trim()}>
-                    <input type='text' placeholder='novanakmeletup' value={form.username} onChange={set('username')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
+                    <input type='text' placeholder='masukkan username' value={form.username} onChange={set('username')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
                   </InputWrap>
                 </div>
                 <div className='flex flex-col gap-1.5'>
