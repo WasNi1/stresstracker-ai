@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { LuHeart, LuBrain, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX } from 'react-icons/lu'
-import { FcGoogle } from 'react-icons/fc'
 import { loginUser, getLoggedUser } from '../api/auth'
 import { useApp } from '../context/AppContext'
 
@@ -226,10 +225,6 @@ function Login() {
                 <div className='flex-1 h-px bg-slate-100'></div>
               </div>
 
-              <button type='button' className='flex items-center justify-center gap-3 w-full border border-slate-200 bg-white hover:bg-slate-50 py-3.5 rounded-2xl font-medium text-slate-600 text-sm transition-all active:scale-[0.98] shadow-sm'>
-                <FcGoogle size={20} />
-                Masuk dengan Google
-              </button>
             </form>
 
             <p className='text-center text-sm text-slate-400 mt-6'>
