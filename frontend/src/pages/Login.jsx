@@ -218,13 +218,6 @@ function Login() {
                 {loading ? 'Memproses...' : 'Masuk'}
                 <LuArrowRight size={16} />
               </button>
-
-              <div className='flex items-center gap-3 my-1'>
-                <div className='flex-1 h-px bg-slate-100'></div>
-                <span className='text-xs text-slate-300'>atau</span>
-                <div className='flex-1 h-px bg-slate-100'></div>
-              </div>
-
             </form>
 
             <p className='text-center text-sm text-slate-400 mt-6'>
