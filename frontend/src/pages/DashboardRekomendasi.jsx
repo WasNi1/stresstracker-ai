@@ -31,6 +31,42 @@ const STRESS_COLOR = {
 }
 
 
+function normalizeStressLevel(value) {
+  if (value === null || value === undefined || value === '') return null
+
+  if (typeof value === 'object') {
+    return normalizeStressLevel(value.label ?? value.level ?? value.value ?? value.stressLevel)
+  }
+
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized === '0' || normalized === 'rendah' || normalized === 'low') return 'Rendah'
+  if (normalized === '1' || normalized === 'sedang' || normalized === 'medium') return 'Sedang'
+  if (normalized === '2' || normalized === 'tinggi' || normalized === 'high') return 'Tinggi'
+
+  // Kompatibilitas data lama yang pernah memakai 1/2/3 sebagai level stress.
+  if (normalized === '3') return 'Tinggi'
+
+  return null
+}
+
+function getStressNumber(value) {
+  const label = normalizeStressLevel(value)
+  if (label === 'Rendah') return 1
+  if (label === 'Sedang') return 2
+  if (label === 'Tinggi') return 3
+  return 0
+}
+
+function getStressColorKey(value) {
+  const label = normalizeStressLevel(value)
+  if (label === 'Tinggi') return 'red'
+  if (label === 'Sedang') return 'amber'
+  if (label === 'Rendah') return 'teal'
+  return 'blue'
+}
+
+
 
 const KONSENTRASI_LABELS = {
   1: 'Sangat Tidak Fokus',
@@ -135,7 +171,7 @@ const INPUT_SECTIONS = [
 ───────────────────────────────────────────── */
 
 function StressHero({ entry }) {
-  const level = entry?.stressLevel ?? null
+  const level = normalizeStressLevel(entry?.stressLevel ?? entry?.stressNum ?? entry?.stress_level_result ?? entry?.stress)
   const c = level ? STRESS_COLOR[level] : null
 
   if (!entry || !level) {

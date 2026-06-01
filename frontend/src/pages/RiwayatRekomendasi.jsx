@@ -37,6 +37,42 @@ const STRESS_COLOR = {
 
 const STRESS_HEIGHT = { Rendah: 40, Sedang: 80, Tinggi: 120 }
 
+function normalizeStressLevel(value) {
+  if (value === null || value === undefined || value === '') return null
+
+  if (typeof value === 'object') {
+    return normalizeStressLevel(value.label ?? value.level ?? value.value ?? value.stressLevel)
+  }
+
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized === '0' || normalized === 'rendah' || normalized === 'low') return 'Rendah'
+  if (normalized === '1' || normalized === 'sedang' || normalized === 'medium') return 'Sedang'
+  if (normalized === '2' || normalized === 'tinggi' || normalized === 'high') return 'Tinggi'
+
+  // Kompatibilitas data lama yang pernah memakai 1/2/3 sebagai level stress.
+  if (normalized === '3') return 'Tinggi'
+
+  return null
+}
+
+function getStressNumber(value) {
+  const label = normalizeStressLevel(value)
+  if (label === 'Rendah') return 1
+  if (label === 'Sedang') return 2
+  if (label === 'Tinggi') return 3
+  return 0
+}
+
+function getStressColorKey(value) {
+  const label = normalizeStressLevel(value)
+  if (label === 'Tinggi') return 'red'
+  if (label === 'Sedang') return 'amber'
+  if (label === 'Rendah') return 'teal'
+  return 'blue'
+}
+
+
 const KONSENTRASI_LABELS = {
   1: 'Sangat Tidak Fokus',
   2: 'Kurang Fokus',
@@ -126,7 +162,7 @@ function WeeklyChart({ entries }) {
       <div className='flex items-end gap-2 mb-3' style={{ height: '160px' }}>
         {days.map((date) => {
           const entry = dataMap[date]
-          const level = entry?.stress?.label
+          const level = normalizeStressLevel(entry?.stress?.label ?? entry?.stressLevel ?? entry?.details?.stress_level_result ?? entry?.details?.stressNum)
           const c = level ? STRESS_COLOR[level] : null
           const isToday = date === today
           const isSelected = selected?.dateISO === date
@@ -136,7 +172,7 @@ function WeeklyChart({ entries }) {
             <div key={date} className='flex-1 flex flex-col items-center gap-1 cursor-pointer group' onClick={() => entry ? setSelected(isSelected ? null : entry) : null}>
               <div className='w-full flex items-end' style={{ height: '140px' }}>
                 {level ? (
-                  <div className={`w-full rounded-t-xl transition-all duration-300 ${c.bar} ${isSelected ? 'opacity-100 ring-2 ring-offset-1 ring-teal-400' : 'opacity-80 group-hover:opacity-100'}`} style={{ height: `${STRESS_HEIGHT[level]}px` }} />
+                  <div className={`w-full rounded-t-xl transition-all duration-300 ${c.bar} ${isSelected ? 'opacity-100 ring-2 ring-offset-1 ring-teal-400' : 'opacity-80 group-hover:opacity-100'}`} style={{ height: `${STRESS_HEIGHT[level] ?? 20}px` }} />
                 ) : (
                   <div className='w-full rounded-t-xl bg-slate-100 opacity-50' style={{ height: '20px' }} />
                 )}
@@ -155,15 +191,18 @@ function WeeklyChart({ entries }) {
           </div>
         ))}
       </div>
-      {selected && (
-        <div className={`${STRESS_COLOR[selected.stress.label].bg} border ${STRESS_COLOR[selected.stress.label].border} rounded-2xl p-5 mt-2`}>
+      {selected && (() => {
+        const selectedStressLabel = normalizeStressLevel(selected.stress?.label ?? selected.stress?.level)
+        const selectedStressColor = selectedStressLabel ? STRESS_COLOR[selectedStressLabel] : STRESS_COLOR.Rendah
+        return (
+        <div className={`${selectedStressColor.bg} border ${selectedStressColor.border} rounded-2xl p-5 mt-2`}>
           <div className='flex justify-between items-start mb-4'>
             <div>
               <div className='text-xs font-mono text-slate-400 mb-1 tracking-wider'>RIWAYAT INPUT</div>
               <div className='text-sm font-semibold text-slate-700'>{selected.date}</div>
             </div>
             <div className='flex items-center gap-2'>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${STRESS_COLOR[selected.stress.label].badge}`}>Stress: {selected.stress.label}</span>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedStressColor.badge}`}>Stress: {selectedStressLabel ?? 'Belum diketahui'}</span>
               <button onClick={() => setSelected(null)} className='w-7 h-7 bg-white/70 border border-slate-200 rounded-full flex items-center justify-center hover:bg-slate-50'>
                 <LuX size={13} className='text-slate-400' />
               </button>
@@ -185,7 +224,8 @@ function WeeklyChart({ entries }) {
             ))}
           </div>
         </div>
-      )}
+        )
+      })()}
       {(!entries || !entries.length) && <p className='text-center text-sm text-slate-400 mt-2'>Belum ada riwayat. Mulai isi input harian untuk melihat grafik.</p>}
     </div>
   )
@@ -240,7 +280,7 @@ function isYes(value) {
 
 function buildLogRecommendation(entry) {
   const d = entry?.details || {}
-  const stressLevel = entry?.stress?.label || d.stressLevel || d.stress || 'Belum diketahui'
+  const stressLevel = normalizeStressLevel(entry?.stress?.label ?? d.stressLevel ?? d.stressNum ?? d.stress_level_result ?? d.stress) || 'Belum diketahui'
   const sleep = toNumber(d.durasi_tidur_menit)
   const screen = toNumber(d.screen_sebelum_tidur)
   const outdoor = toNumber(d.waktu_outdoor)
@@ -564,9 +604,9 @@ function useRiwayatData() {
         const dateShort = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
         const dayName = dayNames[d.getDay()]
 
-        const stressLabel = r.stressLevel || r.stress || null
-        const stressNum = r.stressNum ?? r.stressNum ?? null
-        const color = stressLabel === 'Tinggi' ? 'red' : stressLabel === 'Sedang' ? 'amber' : 'teal'
+        const stressLabel = normalizeStressLevel(r.stressLevel ?? r.stressNum ?? r.stress_level_result ?? r.stress)
+        const stressNum = getStressNumber(r.stressLevel ?? r.stressNum ?? r.stress_level_result ?? r.stress)
+        const color = getStressColorKey(stressLabel)
 
         const sleepMinutes = r.durasi_tidur_menit ?? r.tidurJam ?? null
 
