@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LuMoon, LuFlaskConical, LuBriefcase,
@@ -164,42 +164,39 @@ function OrdinalRow({ min = 1, max = 5, value, onChange, leftLabel, rightLabel }
   )
 }
 
-function SliderRow({ min = 0, max, step = 1, value, onChange, unit }) {
-  const [inputValue, setInputValue] = useState(String(value ?? min))
+function SliderRow({ min = 0, step = 1, value, onChange, unit }) {
+  const [displayValue, setDisplayValue] = useState(String(value ?? min))
 
   useEffect(() => {
-    setInputValue(String(value ?? min))
+    setDisplayValue(String(value ?? min))
   }, [value, min])
 
   const handleFocus = () => {
-    if (Number(inputValue) === 0) {
-      setInputValue('')
-    }
+    if (Number(displayValue) === 0) setDisplayValue('')
   }
 
   const handleChange = (e) => {
     const raw = e.target.value
 
     if (raw === '') {
-      setInputValue('')
+      setDisplayValue('')
       return
     }
 
     const normalized = raw.replace(/^0+(?=\d)/, '')
     let val = Number(normalized)
 
-    if (Number.isNaN(val)) return
+    if (Number.isNaN(val)) val = min
     if (val < min) val = min
-    if (max !== undefined && val > max) val = max
 
     val = Math.round(val)
-    setInputValue(String(val))
+    setDisplayValue(String(val))
     onChange(val)
   }
 
   const handleBlur = () => {
-    if (inputValue === '') {
-      setInputValue(String(min))
+    if (displayValue === '') {
+      setDisplayValue(String(min))
       onChange(min)
     }
   }
@@ -209,9 +206,8 @@ function SliderRow({ min = 0, max, step = 1, value, onChange, unit }) {
       <input
         type='number'
         min={min}
-        max={max}
         step={step}
-        value={inputValue}
+        value={displayValue}
         onFocus={handleFocus}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -293,6 +289,25 @@ function validate(form, durasi) {
   return errors
 }
 
+
+function getTodayKey() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function hasSubmittedForDate(tanggal) {
+  try {
+    const raw = localStorage.getItem('riwayat_harian')
+    const data = raw ? JSON.parse(raw) : []
+    return Array.isArray(data) && data.some((item) => item?.tanggal === tanggal)
+  } catch {
+    return false
+  }
+}
+
 /* ─────────────────────────────────
    Main
 ─────────────────────────────────── */
@@ -302,6 +317,8 @@ function DailyInput() {
   const [submitted, setSubmitted] = useState(false)
   const [errors, setErrors] = useState({})
   const [responseMessage, setResponseMessage] = useState(null)
+  const todayKey = useMemo(() => getTodayKey(), [])
+  const [hasSubmittedToday, setHasSubmittedToday] = useState(() => hasSubmittedForDate(todayKey))
 
   const set = (key) => (val) => {
     setForm((f) => ({ ...f, [key]: val }))
@@ -315,6 +332,15 @@ function DailyInput() {
   )
 
   const handleSubmit = async () => {
+    if (hasSubmittedToday) {
+      setResponseMessage({
+        status: 409,
+        title: 'Input hari ini sudah ada',
+        message: 'Kamu sudah mengisi input harian hari ini. Silakan kembali besok untuk mengisi lagi.',
+      })
+      return
+    }
+
     const errs = validate(form, durasi)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -330,7 +356,7 @@ function DailyInput() {
     }
 
     try {
-      const tanggal = new Date().toISOString().split('T')[0]
+      const tanggal = todayKey
 
       // Payload utama mengikuti format backend.
       const payload = {
@@ -414,6 +440,7 @@ function DailyInput() {
       filtered.push(entry)
       filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal))
       localStorage.setItem('riwayat_harian', JSON.stringify(filtered.slice(-30)))
+      setHasSubmittedToday(true)
 
       setResponseMessage({
         status: response?.status || 200,
@@ -421,7 +448,7 @@ function DailyInput() {
         message: response?.data?.message || 'Check-in harian berhasil disimpan.',
       })
 
-      setTimeout(() => navigate('/dashboard'), 700)
+      setTimeout(() => navigate('/'), 700)
     } catch (error) {
       const status = error.response?.status || 500
       const message = error.response?.data?.message || 'Terjadi kesalahan saat menyimpan check-in. Coba ulangi kembali.'
@@ -452,6 +479,12 @@ function DailyInput() {
             onClose={() => setResponseMessage(null)}
             className='mb-4'
           />
+        )}
+
+        {hasSubmittedToday && (
+          <div className='mb-4 rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-700'>
+            Kamu sudah mengisi input harian hari ini. Form bisa diisi kembali besok.
+          </div>
         )}
 
         <div className='space-y-3'>
@@ -504,7 +537,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi penggunaan layar (HP/laptop) sebelum tidur dalam menit'>
                 Screen time sebelum tidur
               </FieldLabel>
-              <SliderRow min={0} max={240} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
+              <SliderRow min={0} step={5} value={form.screen_sebelum_tidur} onChange={set('screen_sebelum_tidur')} unit=' mnt' />
             </div>
           </div>
 
@@ -612,7 +645,7 @@ function DailyInput() {
               <FieldLabel sub='Durasi waktu di luar ruangan hari ini (self-report)'>
                 Waktu outdoor
               </FieldLabel>
-              <SliderRow min={0} max={480} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
+              <SliderRow min={0} step={10} value={form.waktu_outdoor} onChange={set('waktu_outdoor')} unit=' mnt' />
             </div>
           </div>
 
@@ -622,13 +655,20 @@ function DailyInput() {
         <div className='mt-6'>
           <button
             onClick={handleSubmit}
-            className='w-full flex items-center justify-center gap-2 py-4 bg-teal-500 hover:bg-teal-400 active:scale-[0.98] text-white font-semibold rounded-2xl text-sm transition-all shadow-lg shadow-teal-100'
+            disabled={hasSubmittedToday}
+            className={`w-full flex items-center justify-center gap-2 py-4 text-white font-semibold rounded-2xl text-sm transition-all shadow-lg ${
+              hasSubmittedToday
+                ? 'bg-slate-300 cursor-not-allowed shadow-slate-100'
+                : 'bg-teal-500 hover:bg-teal-400 active:scale-[0.98] shadow-teal-100'
+            }`}
           >
             <LuSave size={16} />
-            Simpan & Lihat Hasil
+            {hasSubmittedToday ? 'Sudah Mengisi Hari Ini' : 'Simpan & Lihat Hasil'}
           </button>
           <p className='text-center text-xs text-slate-400 mt-3'>
-            Data akan diproses model deep learning untuk memprediksi stress level kamu.
+            {hasSubmittedToday
+              ? 'Kamu bisa mengisi check-in harian lagi besok.'
+              : 'Data akan diproses model deep learning untuk memprediksi stress level kamu.'}
           </p>
         </div>
 
