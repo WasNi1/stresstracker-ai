@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   LuHeart, LuBrain, LuMail, LuLock, LuArrowRight,
-  LuUser, LuBriefcase, LuCalendar, LuCircleCheck, LuCircleX, LuAtSign,
+  LuUser, LuBriefcase, LuCalendar, LuCircleCheck, LuCircleX, LuAtSign, LuEye, LuEyeOff,
 } from 'react-icons/lu'
 import { registerUser } from '../api/auth'
 
@@ -63,6 +63,7 @@ function Register() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const set = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }))
@@ -220,7 +221,23 @@ function Register() {
               <div className='flex flex-col gap-1.5'>
                 <label className='text-sm font-medium text-slate-600'>Password</label>
                 <InputWrap icon={LuLock} error={submitted && !isPasswordValid(form.password)}>
-                  <input type='password' placeholder='Min. 8 karakter' value={form.password} onChange={set('password')} disabled={loading} className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50' />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder='Min. 8 karakter'
+                    value={form.password}
+                    onChange={set('password')}
+                    disabled={loading}
+                    className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50'
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    disabled={loading}
+                    className='text-slate-300 hover:text-teal-500 transition-colors disabled:opacity-50'
+                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  >
+                    {showPassword ? <LuEyeOff size={17} /> : <LuEye size={17} />}
+                  </button>
                 </InputWrap>
                 <PasswordStrength password={form.password} />
               </div>

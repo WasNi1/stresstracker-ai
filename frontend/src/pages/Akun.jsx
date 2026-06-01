@@ -4,7 +4,7 @@ import {
   LuMail, LuCalendar, LuPencil,
   LuBell, LuPalette, LuLock,
   LuLogOut, LuChevronRight,
-  LuTriangleAlert, LuX, LuCheck,
+  LuTriangleAlert, LuX, LuCheck, LuEye, LuEyeOff,
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
@@ -157,6 +157,22 @@ function LogoutModal({ onClose, onConfirm }) {
 }
 
 function PasswordModal({ onClose }) {
+  const [visiblePasswords, setVisiblePasswords] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  })
+
+  const passwordFields = [
+    { key: 'oldPassword', label: 'Password lama' },
+    { key: 'newPassword', label: 'Password baru' },
+    { key: 'confirmPassword', label: 'Konfirmasi password baru' },
+  ]
+
+  const togglePassword = (key) => {
+    setVisiblePasswords((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
       <div className='absolute inset-0 bg-black/30 backdrop-blur-sm' onClick={onClose} />
@@ -168,14 +184,24 @@ function PasswordModal({ onClose }) {
         <div className='font-semibold text-slate-800 mb-4'>Ubah Password</div>
 
         <div className='space-y-3 mb-5'>
-          {['Password lama', 'Password baru', 'Konfirmasi password baru'].map((label) => (
-            <div key={label}>
-              <label className='text-xs text-slate-400 mb-1 block'>{label}</label>
-              <input
-                type='password'
-                placeholder='••••••••'
-                className='w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-teal-400 transition-all'
-              />
+          {passwordFields.map((field) => (
+            <div key={field.key}>
+              <label className='text-xs text-slate-400 mb-1 block'>{field.label}</label>
+              <div className='flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-teal-400 transition-all'>
+                <input
+                  type={visiblePasswords[field.key] ? 'text' : 'password'}
+                  placeholder='••••••••'
+                  className='w-full bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300'
+                />
+                <button
+                  type='button'
+                  onClick={() => togglePassword(field.key)}
+                  className='text-slate-300 hover:text-teal-500 transition-colors'
+                  aria-label={visiblePasswords[field.key] ? `Sembunyikan ${field.label}` : `Tampilkan ${field.label}`}
+                >
+                  {visiblePasswords[field.key] ? <LuEyeOff size={16} /> : <LuEye size={16} />}
+                </button>
+              </div>
             </div>
           ))}
         </div>

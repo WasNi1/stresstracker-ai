@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LuHeart, LuBrain, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX } from 'react-icons/lu'
+import { LuHeart, LuBrain, LuMail, LuLock, LuArrowRight, LuCircleCheck, LuCircleX, LuEye, LuEyeOff } from 'react-icons/lu'
 import { loginUser, getLoggedUser } from '../api/auth'
 import { useApp } from '../context/AppContext'
 
@@ -42,6 +42,7 @@ function Login() {
 
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -199,13 +200,22 @@ function Login() {
                 <div className={`flex items-center gap-2 bg-slate-50 border focus-within:bg-white focus-within:ring-4 focus-within:ring-teal-50 rounded-2xl px-4 py-3.5 transition-all ${submitted && !isPasswordValid(password) ? 'border-red-300' : 'border-slate-200 focus-within:border-teal-400'}`}>
                   <LuLock size={16} className='text-slate-300 shrink-0' />
                   <input
-                    type='password'
+                    type={showPassword ? 'text' : 'password'}
                     placeholder='••••••••'
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
                     className='bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-300 w-full disabled:opacity-50'
                   />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    disabled={loading}
+                    className='text-slate-300 hover:text-teal-500 transition-colors disabled:opacity-50'
+                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  >
+                    {showPassword ? <LuEyeOff size={17} /> : <LuEye size={17} />}
+                  </button>
                 </div>
                 <PasswordStrength password={password} />
               </div>
