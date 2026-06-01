@@ -40,6 +40,7 @@ const features = [
 function Login() {
   const navigate = useNavigate()
   const { updateUser } = useApp()
+
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -55,10 +56,19 @@ function Login() {
       setError('Email atau username wajib diisi')
       return
     }
-    if (!isPasswordValid(password)) return
+
+    if (!isPasswordValid(password)) {
+      setError('Password harus minimal 8 karakter, mengandung huruf kapital, dan angka')
+      return
+    }
 
     try {
       setLoading(true)
+
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
+
       const response = await loginUser({
         identifier: identifier.trim(),
         password,
@@ -68,47 +78,53 @@ function Login() {
       const accessToken = body?.data?.accessToken
       const refreshToken = body?.data?.refreshToken
 
-      if (body?.status !== 'success' || !accessToken || !refreshToken) {
-        throw new Error(body?.message || 'Email/username atau password salah')
+      if (
+        response.status !== 201 ||
+        body?.code !== 201 ||
+        body?.status !== 'success' ||
+        typeof accessToken !== 'string' ||
+        typeof refreshToken !== 'string' ||
+        accessToken.trim() === '' ||
+        refreshToken.trim() === ''
+      ) {
+        throw new Error('Email/username atau password salah')
       }
 
       localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('token', accessToken)
       localStorage.setItem('refreshToken', refreshToken)
 
-      try {
-        const meResponse = await getLoggedUser()
-        const user = meResponse.data?.data?.user
-        if (user) {
-          updateUser({
-            ...user,
-            name: user.fullname,
-            nama: user.fullname,
-            gender: user.jenisKelamin,
-            jenis_kelamin: user.jenisKelamin,
-            job: user.pekerjaan,
-            pekerjaan: user.pekerjaan,
-          })
-        }
-      } catch {
-        // Token sudah tersimpan; profile tetap bisa diambil lagi di halaman Akun.
+      const meResponse = await getLoggedUser()
+      const user = meResponse.data?.data?.user
+
+      if (!user?.id) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('token')
+        throw new Error('Login gagal. Data pengguna tidak valid.')
       }
+
+      updateUser({
+        ...user,
+        name: user.fullname,
+        nama: user.fullname,
+        gender: user.jenisKelamin,
+        jenis_kelamin: user.jenisKelamin,
+        job: user.pekerjaan,
+        pekerjaan: user.pekerjaan,
+      })
 
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      if (err.response?.status === 401) {
-        setError('Email/username atau password salah')
-      } else if (err.response?.status === 429) {
-        setError('Terlalu banyak percobaan login, coba lagi nanti')
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message)
-      } else if (err.message === 'Network Error') {
-        setError('Tidak bisa terhubung ke server. Cek koneksi internet Anda.')
-      } else if (err.message) {
-        setError(err.message)
-      } else {
-        setError('Login gagal, coba lagi nanti')
-      }
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('token')
+
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        'Email/username atau password salah'
+      )
     } finally {
       setLoading(false)
     }
@@ -157,7 +173,11 @@ function Login() {
             <h1 className='text-3xl font-bold text-slate-800'>Selamat datang</h1>
             <p className='text-slate-400 mt-2 text-sm'>Masuk memakai email atau username</p>
 
-            {error && <div className='mt-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl'><p className='text-sm text-red-700'>{error}</p></div>}
+            {error && (
+              <div className='mt-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl'>
+                <p className='text-sm text-red-700'>{error}</p>
+              </div>
+            )}
 
             <form className={`mt-8 flex flex-col gap-4 ${error ? 'mt-4' : ''}`} onSubmit={handleSubmit}>
               <div className='flex flex-col gap-1.5'>
@@ -212,7 +232,9 @@ function Login() {
               </button>
             </form>
 
-            <p className='text-center text-sm text-slate-400 mt-6'>Belum punya akun? <Link to='/register' className='text-teal-500 hover:text-teal-600 font-semibold'>Daftar sekarang</Link></p>
+            <p className='text-center text-sm text-slate-400 mt-6'>
+              Belum punya akun? <Link to='/register' className='text-teal-500 hover:text-teal-600 font-semibold'>Daftar sekarang</Link>
+            </p>
           </div>
         </div>
       </div>
