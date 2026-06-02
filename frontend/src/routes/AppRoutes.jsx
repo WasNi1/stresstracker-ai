@@ -18,7 +18,7 @@ function ProtectedRoute({ children }) {
   const token = getAuthToken()
 
   if (!token) {
-    return <Navigate to='/login' replace />
+    return <Navigate to='/' replace />
   }
 
   return children
