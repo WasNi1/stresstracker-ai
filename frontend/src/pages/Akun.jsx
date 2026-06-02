@@ -751,7 +751,7 @@ export default function Akun() {
           <div className='py-3 text-[11px] leading-relaxed text-slate-400'>
             {notificationLoading
               ? 'Menyimpan pengaturan notifikasi...'
-              : 'Saat pengingat aktif, aplikasi akan menyimpan jam pengingat dan FCM token ke backend.'}
+              : ''}
           </div>
         </SectionCard>
 
