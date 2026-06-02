@@ -4,6 +4,7 @@ import Register from '../pages/Register'
 import ForgotPassword from '../pages/ForgotPassword'
 import VerifyOtp from '../pages/VerifyOtp'
 import ResetPassword from '../pages/ResetPassword'
+import Landing from '../pages/Landing'
 import DashboardRekomendasi from '../pages/DashboardRekomendasi'
 import DailyInput from '../pages/DailyInput'
 import RiwayatRekomendasi from '../pages/RiwayatRekomendasi'
@@ -37,7 +38,14 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Navigate to='/dashboard' replace />} />
+        <Route
+          path='/'
+          element={
+            <GuestRoute>
+              <Landing />
+            </GuestRoute>
+          }
+        />
 
         <Route
           path='/login'
@@ -120,7 +128,10 @@ function AppRoutes() {
           }
         />
 
-        <Route path='*' element={<Navigate to='/dashboard' replace />} />
+        <Route
+          path='*'
+          element={getAuthToken() ? <Navigate to='/dashboard' replace /> : <Navigate to='/' replace />}
+        />
       </Routes>
     </BrowserRouter>
   )
