@@ -9,16 +9,29 @@ import {
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
 import { changePassword, getLoggedUser, logoutUser, updateProfile } from '../api/auth'
+import { saveFcmToken, updateReminder } from '../api/notification'
 import { calculateCheckinStats, fetchCheckinEntries, getCachedCheckinEntries } from '../utils/checkinData'
+import { getBrowserFcmToken } from '../utils/fcmNotification'
 
-function Toggle({ defaultOn = false, onChange }) {
-  const [on, setOn] = useState(defaultOn)
-  const handle = () => { setOn(!on); onChange?.(!on) }
+function Toggle({ defaultOn = false, checked, onChange, disabled = false }) {
+  const [internalOn, setInternalOn] = useState(defaultOn)
+  const isControlled = checked !== undefined
+  const on = isControlled ? checked : internalOn
+
+  const handle = () => {
+    if (disabled) return
+    const next = !on
+    if (!isControlled) setInternalOn(next)
+    onChange?.(next)
+  }
 
   return (
     <button
+      type='button'
       onClick={handle}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${on ? 'bg-teal-500' : 'bg-slate-200'}`}
+      disabled={disabled}
+      aria-pressed={on}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${on ? 'bg-teal-500' : 'bg-slate-200'}`}
     >
       <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-200 ${on ? 'left-[22px]' : 'left-[3px]'}`} />
     </button>
@@ -313,6 +326,9 @@ export default function Akun() {
   const [reminderHour, setReminderHour] = useState(
     () => localStorage.getItem('jam_pengingat_input') || '20:00'
   )
+  const [notificationLoading, setNotificationLoading] = useState(false)
+  const [notificationStatus, setNotificationStatus] = useState('')
+  const [notificationError, setNotificationError] = useState('')
 
   const [logStats, setLogStats] = useState(() => calculateCheckinStats(getCachedCheckinEntries()))
   const [lang, setLang] = useState('Indonesia')
@@ -405,6 +421,55 @@ export default function Akun() {
       window.removeEventListener('focus', refreshStats)
     }
   }, [])
+
+  const handleReminderToggle = async (next) => {
+    setNotificationStatus('')
+    setNotificationError('')
+    setReminderEnabled(next)
+    localStorage.setItem('pengingat_input_harian', String(next))
+
+    if (!next) {
+      setNotificationStatus('Pengingat input harian dimatikan di perangkat ini.')
+      return
+    }
+
+    try {
+      setNotificationLoading(true)
+
+      await updateReminder(reminderHour)
+
+      const result = await getBrowserFcmToken()
+      if (result.token) {
+        await saveFcmToken(result.token)
+        localStorage.setItem('fcmToken', result.token)
+      }
+
+      setNotificationStatus(result.message || `Pengingat berhasil diatur untuk jam ${reminderHour}.`)
+    } catch (error) {
+      setNotificationError(error.response?.data?.message || 'Pengingat gagal disimpan. Coba lagi.')
+    } finally {
+      setNotificationLoading(false)
+    }
+  }
+
+  const handleReminderTimeChange = async (value) => {
+    setReminderHour(value)
+    localStorage.setItem('jam_pengingat_input', value)
+    setNotificationStatus('')
+    setNotificationError('')
+
+    if (!reminderEnabled) return
+
+    try {
+      setNotificationLoading(true)
+      const response = await updateReminder(value)
+      setNotificationStatus(response.data?.message || `Pengingat berhasil diatur untuk jam ${value}.`)
+    } catch (error) {
+      setNotificationError(error.response?.data?.message || 'Jam pengingat gagal disimpan. Coba lagi.')
+    } finally {
+      setNotificationLoading(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaveError('')
@@ -641,26 +706,39 @@ export default function Akun() {
         </SectionCard>
 
         <SectionCard title='NOTIFIKASI' icon={LuBell}>
+          {notificationError && (
+            <div className='mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600'>
+              {notificationError}
+            </div>
+          )}
+
+          {notificationStatus && (
+            <div className='mt-4 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-xs text-teal-600'>
+              {notificationStatus}
+            </div>
+          )}
+
           <SettingsItem
             label='Pengingat input harian'
-            sub='Ingatkan untuk isi log setiap hari'
+            sub='Aktifkan push notification untuk mengingatkan check-in harian'
             right={
               <Toggle
-                defaultOn={reminderEnabled}
-                onChange={setReminderEnabled}
+                checked={reminderEnabled}
+                onChange={handleReminderToggle}
+                disabled={notificationLoading}
               />
             }
           />
 
           <SettingsItem
             label='Jam pengingat'
-            sub={reminderEnabled ? `${reminderHour} — sebelum tidur` : 'Pengingat input harian sedang mati'}
+            sub={reminderEnabled ? `${reminderHour} — akan disimpan ke backend` : 'Pengingat input harian sedang mati'}
             right={
               <input
                 type='time'
                 value={reminderHour}
-                disabled={!reminderEnabled}
-                onChange={(e) => setReminderHour(e.target.value)}
+                disabled={!reminderEnabled || notificationLoading}
+                onChange={(e) => handleReminderTimeChange(e.target.value)}
                 className={`bg-slate-50 border border-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-400 transition-all ${
                   reminderEnabled
                     ? 'text-slate-600'
@@ -669,6 +747,12 @@ export default function Akun() {
               />
             }
           />
+
+          <div className='py-3 text-[11px] leading-relaxed text-slate-400'>
+            {notificationLoading
+              ? 'Menyimpan pengaturan notifikasi...'
+              : 'Saat pengingat aktif, aplikasi akan menyimpan jam pengingat dan FCM token ke backend.'}
+          </div>
         </SectionCard>
 
         <SectionCard title='TAMPILAN' icon={LuPalette}>
