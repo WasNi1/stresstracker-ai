@@ -36,3 +36,8 @@ export const resetPassword = (payload) => {
 export const changePassword = (payload) => {
   return api.put('/change-password', payload)
 }
+
+
+export const updateProfile = (payload) => {
+  return api.put('/me/change', payload)
+}

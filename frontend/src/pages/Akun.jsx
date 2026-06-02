@@ -8,7 +8,7 @@ import {
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
-import { changePassword, getLoggedUser, logoutUser } from '../api/auth'
+import { changePassword, getLoggedUser, logoutUser, updateProfile } from '../api/auth'
 import { calculateCheckinStats, fetchCheckinEntries, getCachedCheckinEntries } from '../utils/checkinData'
 
 function Toggle({ defaultOn = false, onChange }) {
@@ -305,6 +305,7 @@ export default function Akun() {
   const [showPassword, setShowPassword] = useState(false)
   const [showLogout, setShowLogout] = useState(false)
   const [saveOk, setSaveOk] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const [reminderEnabled, setReminderEnabled] = useState(
     () => localStorage.getItem('pengingat_input_harian') !== 'false'
@@ -316,19 +317,26 @@ export default function Akun() {
   const [logStats, setLogStats] = useState(() => calculateCheckinStats(getCachedCheckinEntries()))
   const [lang, setLang] = useState('Indonesia')
 
-  const displayName = user?.name || user?.nama || null
+  const displayName = user?.fullname || user?.name || user?.nama || null
+  const displayUsername = user?.username || null
   const displayEmail = user?.email || null
+  const displayBirthDate = user?.birthDate || user?.birth_date || user?.tanggal_lahir || null
   const displayAge = user?.age || user?.usia || null
-  const displayGender = user?.gender || user?.jenis_kelamin || null
+  const displayGender = user?.gender || user?.jenisKelamin || user?.jenis_kelamin || null
   const displayJob = user?.job || user?.pekerjaan || null
 
   const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : 'G'
-  const subParts = [displayJob, displayAge ? `${displayAge} tahun` : null, displayGender].filter(Boolean)
+  const subParts = [
+    displayJob,
+    displayBirthDate ? `Lahir ${new Date(displayBirthDate).toLocaleDateString('id-ID')}` : displayAge ? `${displayAge} tahun` : null,
+    displayGender,
+  ].filter(Boolean)
 
   const [form, setForm] = useState({
-    nama: displayName ?? '',
+    fullname: displayName ?? '',
+    username: displayUsername ?? '',
     email: displayEmail ?? '',
-    usia: displayAge ? String(displayAge) : '',
+    birthDate: displayBirthDate ?? '',
     pekerjaan: displayJob ?? '',
   })
 
@@ -346,11 +354,22 @@ export default function Akun() {
           ...loggedUser,
           name: loggedUser.fullname,
           nama: loggedUser.fullname,
+          username: loggedUser.username,
+          birthDate: loggedUser.birthDate,
+          birth_date: loggedUser.birthDate,
           gender: loggedUser.jenisKelamin,
           jenis_kelamin: loggedUser.jenisKelamin,
           job: loggedUser.pekerjaan,
           pekerjaan: loggedUser.pekerjaan,
         })
+        setForm((prev) => ({
+          ...prev,
+          fullname: loggedUser.fullname ?? prev.fullname,
+          username: loggedUser.username ?? prev.username,
+          email: loggedUser.email ?? prev.email,
+          birthDate: loggedUser.birthDate ?? prev.birthDate,
+          pekerjaan: loggedUser.pekerjaan ?? prev.pekerjaan,
+        }))
       } catch {
         // Profil tetap memakai data localStorage jika /me belum bisa diakses.
       }
@@ -387,22 +406,57 @@ export default function Akun() {
     }
   }, [])
 
-  const handleSave = () => {
-    const updated = {
-      ...user,
-      name: form.nama || null,
-      nama: form.nama || null,
-      email: form.email || null,
-      age: form.usia ? Number(form.usia) : null,
-      usia: form.usia ? Number(form.usia) : null,
-      job: form.pekerjaan || null,
-      pekerjaan: form.pekerjaan || null,
+  const handleSave = async () => {
+    setSaveError('')
+
+    if (!form.fullname.trim()) {
+      setSaveError('Nama lengkap wajib diisi')
+      return
     }
 
-    updateUser(updated)
-    setEditOpen(false)
-    setSaveOk(true)
-    setTimeout(() => setSaveOk(false), 2500)
+    if (!form.username.trim()) {
+      setSaveError('Username wajib diisi')
+      return
+    }
+
+    if (!form.birthDate) {
+      setSaveError('Tanggal lahir wajib diisi')
+      return
+    }
+
+    if (!form.pekerjaan) {
+      setSaveError('Pekerjaan wajib dipilih')
+      return
+    }
+
+    const payload = {
+      fullname: form.fullname.trim(),
+      username: form.username.trim(),
+      birthDate: form.birthDate,
+      pekerjaan: form.pekerjaan,
+    }
+
+    try {
+      await updateProfile(payload)
+
+      const updated = {
+        ...user,
+        ...payload,
+        name: payload.fullname,
+        nama: payload.fullname,
+        birth_date: payload.birthDate,
+        job: payload.pekerjaan,
+        pekerjaan: payload.pekerjaan,
+        email: displayEmail,
+      }
+
+      updateUser(updated)
+      setEditOpen(false)
+      setSaveOk(true)
+      setTimeout(() => setSaveOk(false), 2500)
+    } catch (error) {
+      setSaveError(error.response?.data?.message || 'Profil gagal diperbarui. Coba lagi.')
+    }
   }
 
   const handleLogout = async () => {
@@ -485,7 +539,17 @@ export default function Akun() {
               </div>
 
               <button
-                onClick={() => setEditOpen(!editOpen)}
+                onClick={() => {
+                  setSaveError('')
+                  setForm({
+                    fullname: displayName ?? '',
+                    username: displayUsername ?? '',
+                    email: displayEmail ?? '',
+                    birthDate: displayBirthDate ?? '',
+                    pekerjaan: displayJob ?? '',
+                  })
+                  setEditOpen(!editOpen)
+                }}
                 className='flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:border-teal-400 hover:text-teal-500 transition-all shrink-0'
               >
                 <LuPencil size={11} />
@@ -494,11 +558,17 @@ export default function Akun() {
             </div>
 
             {editOpen && (
-              <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <div className='mt-5 pt-5 border-t border-slate-100 grid grid-cols-1 gap-4 sm:grid-cols-2'>
+                {saveError && (
+                  <div className='sm:col-span-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600'>
+                    {saveError}
+                  </div>
+                )}
+
                 {[
-                  { label: 'Nama lengkap', key: 'nama', placeholder: 'Contoh: Budi Santoso', type: 'text' },
-                  { label: 'Email', key: 'email', placeholder: 'nama@email.com', type: 'email' },
-                  { label: 'Usia', key: 'usia', placeholder: 'Contoh: 22', type: 'number' },
+                  { label: 'Nama lengkap', key: 'fullname', placeholder: 'Contoh: Budi Santoso', type: 'text' },
+                  { label: 'Username', key: 'username', placeholder: 'Contoh: budisantoso', type: 'text' },
+                  { label: 'Tanggal lahir', key: 'birthDate', placeholder: '', type: 'date' },
                 ].map((f) => (
                   <div key={f.key}>
                     <label className='text-xs text-slate-400 mb-1 block'>{f.label}</label>
@@ -511,6 +581,18 @@ export default function Akun() {
                     />
                   </div>
                 ))}
+
+                <div>
+                  <label className='text-xs text-slate-400 mb-1 block'>Email</label>
+                  <input
+                    type='email'
+                    value={form.email}
+                    readOnly
+                    disabled
+                    className='w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-400 cursor-not-allowed'
+                  />
+                  <p className='text-[11px] text-slate-400 mt-1'>Email tidak dapat diubah dari halaman ini.</p>
+                </div>
 
                 <div>
                   <label className='text-xs text-slate-400 mb-1 block'>Pekerjaan</label>
@@ -526,17 +608,17 @@ export default function Akun() {
                   </select>
                 </div>
 
-                <div className='col-span-2 flex justify-end gap-2 mt-1'>
+                <div className='sm:col-span-2 flex flex-col-reverse gap-2 mt-2 sm:flex-row sm:justify-end'>
                   <button
-                    onClick={() => setEditOpen(false)}
-                    className='text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'
+                    onClick={() => { setEditOpen(false); setSaveError('') }}
+                    className='w-full sm:w-auto text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-500 hover:border-slate-300 transition-all'
                   >
                     Batal
                   </button>
 
                   <button
                     onClick={handleSave}
-                    className='text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all flex items-center gap-1.5'
+                    className='w-full sm:w-auto text-xs px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-semibold transition-all flex items-center justify-center gap-1.5'
                   >
                     {saveOk ? <><LuCheck size={12} />Tersimpan</> : 'Simpan'}
                   </button>
