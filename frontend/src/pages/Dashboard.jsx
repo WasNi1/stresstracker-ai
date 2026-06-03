@@ -10,6 +10,8 @@ import {
 } from 'react-icons/lu'
 import MainLayout from '../layouts/MainLayout'
 import { useApp } from '../context/AppContext'
+import { getBrowserFcmToken } from '../utils/fcmNotification';
+import { saveFcmToken } from '../api/notification';
 
 /* ─────────────────────────────────────────────
    Helpers
@@ -23,8 +25,8 @@ function getGreeting() {
 
 const STRESS_COLOR = {
   'Rendah': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-600', bar: 'bg-emerald-400', dot: 'bg-emerald-400' },
-  'Sedang': { bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-500',   badge: 'bg-amber-100 text-amber-600',   bar: 'bg-amber-400',   dot: 'bg-amber-400'   },
-  'Tinggi': { bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-500',    badge: 'bg-rose-100 text-rose-600',    bar: 'bg-rose-400',    dot: 'bg-rose-400'    },
+  'Sedang': { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-500', badge: 'bg-amber-100 text-amber-600', bar: 'bg-amber-400', dot: 'bg-amber-400' },
+  'Tinggi': { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-500', badge: 'bg-rose-100 text-rose-600', bar: 'bg-rose-400', dot: 'bg-rose-400' },
 }
 
 
@@ -53,27 +55,27 @@ function formatSkalaLabel(key, val) {
 function formatLabel(key) {
   const map = {
     // Pola & kualitas tidur
-    durasi_tidur_menit:     'Durasi Tidur (menit)',
+    durasi_tidur_menit: 'Durasi Tidur (menit)',
     sering_terbangun_malam: 'Sering Terbangun Malam',
-    mimpi_buruk:            'Mimpi Buruk',
-    screen_sebelum_tidur:   'Screen Sebelum Tidur (menit)',
+    mimpi_buruk: 'Mimpi Buruk',
+    screen_sebelum_tidur: 'Screen Sebelum Tidur (menit)',
     // Konsumsi zat & substansi
-    minum_kopi_hari_ini:    'Minum Kopi Hari Ini',
-    merokok:                'Merokok',
-    konsumsi_alkohol:       'Konsumsi Alkohol',
+    minum_kopi_hari_ini: 'Minum Kopi Hari Ini',
+    merokok: 'Merokok',
+    konsumsi_alkohol: 'Konsumsi Alkohol',
     // Beban & tekanan kerja
-    deadline_hari_ini:      'Deadline Hari Ini',
-    lembur:                 'Lembur',
-    konsentrasi:            'Konsentrasi',
+    deadline_hari_ini: 'Deadline Hari Ini',
+    lembur: 'Lembur',
+    konsentrasi: 'Konsentrasi',
     // Kondisi hubungan sosial
-    suasana_hati:           'Suasana Hati',
-    konflik_interpersonal:  'Konflik Interpersonal',
-    merasa_kesepian:        'Merasa Kesepian',
-    interaksi_sosial:       'Interaksi Sosial',
+    suasana_hati: 'Suasana Hati',
+    konflik_interpersonal: 'Konflik Interpersonal',
+    merasa_kesepian: 'Merasa Kesepian',
+    interaksi_sosial: 'Interaksi Sosial',
     // Aktivitas pemulihan diri
-    meditasi:               'Meditasi',
-    aktivitas_hobi:         'Aktivitas Hobi',
-    waktu_outdoor:          'Waktu Outdoor',
+    meditasi: 'Meditasi',
+    aktivitas_hobi: 'Aktivitas Hobi',
+    waktu_outdoor: 'Waktu Outdoor',
   }
   return map[key] || key
 }
@@ -216,6 +218,32 @@ function Dashboard() {
 
   const displayName = user?.name || user?.nama || null
 
+  useEffect(() => {
+    const askForNotificationPermission = async () => {
+      if (Notification.permission === 'default') {
+        try {
+          console.log('Memicu pop-up izin notifikasi otomatis...');
+          const result = await getBrowserFcmToken();
+
+          if (result.token) {
+            await saveFcmToken(result.token);
+
+            localStorage.setItem('fcmToken', result.token);
+            localStorage.setItem('pengingat_input_harian', 'true'); // Otomatis ON-kan toggle
+
+            console.log('Izin diberikan! Token otomatis tersimpan.');
+          } else {
+            console.log('User menekan Block atau menutup pop-up.');
+          }
+        } catch (error) {
+          console.error('Gagal memproses notifikasi otomatis:', error);
+        }
+      }
+    };
+
+    askForNotificationPermission();
+  }, []);
+  
   return (
     <MainLayout title='Dashboard'>
       <div className='max-w-2xl mx-auto'>
