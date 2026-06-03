@@ -320,9 +320,13 @@ export default function Akun() {
   const [saveOk, setSaveOk] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  const [reminderEnabled, setReminderEnabled] = useState(
-    () => localStorage.getItem('pengingat_input_harian') !== 'false'
-  )
+  const [reminderEnabled, setReminderEnabled] = useState(() => {
+    const isPermissionGranted = Notification.permission === 'granted';
+    const hasFcmToken = localStorage.getItem('fcmToken') !== null;
+
+    return isPermissionGranted && hasFcmToken;
+  });
+
   const [reminderHour, setReminderHour] = useState(
     () => localStorage.getItem('jam_pengingat_input') || '20:00'
   )
@@ -395,10 +399,6 @@ export default function Akun() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('pengingat_input_harian', String(reminderEnabled))
-  }, [reminderEnabled])
-
-  useEffect(() => {
     localStorage.setItem('jam_pengingat_input', reminderHour)
   }, [reminderHour])
 
@@ -423,34 +423,70 @@ export default function Akun() {
   }, [])
 
   const handleReminderToggle = async (next) => {
-    setNotificationStatus('')
-    setNotificationError('')
-    setReminderEnabled(next)
-    localStorage.setItem('pengingat_input_harian', String(next))
+    setNotificationStatus('');
+    setNotificationError('');
 
+    // 🔴 SKENARIO 1: JIKA USER MEMATIKAN TOGGLE (OFF)
     if (!next) {
-      setNotificationStatus('Pengingat input harian dimatikan di perangkat ini.')
-      return
+      // Pindahkan UI secara optimis
+      setReminderEnabled(false);
+      localStorage.setItem('pengingat_input_harian', 'false');
+
+      try {
+        setNotificationLoading(true);
+        // Hapus token di backend
+        await saveFcmToken("");
+        // Hapus bukti di browser
+        localStorage.removeItem('fcmToken');
+        setNotificationStatus('Pengingat input harian dimatikan di perangkat ini.');
+      } catch (error) {
+        console.error('Error saat mematikan notif:', error);
+        setNotificationError('Gagal mematikan pengingat di server.');
+
+        // ROLLBACK: Kalau backend error, balikan tombol ke ON
+        setReminderEnabled(true);
+        localStorage.setItem('pengingat_input_harian', 'true');
+      } finally {
+        setNotificationLoading(false);
+      }
+      return;
     }
+
+
+    // 🟢 SKENARIO 2: JIKA USER MENYALAKAN TOGGLE (ON)
+    // Pindahkan UI secara optimis
+    setReminderEnabled(true);
+    localStorage.setItem('pengingat_input_harian', 'true');
 
     try {
-      setNotificationLoading(true)
+      setNotificationLoading(true);
 
-      await updateReminder(reminderHour)
+      await updateReminder(reminderHour);
+      const result = await getBrowserFcmToken();
 
-      const result = await getBrowserFcmToken()
       if (result.token) {
-        await saveFcmToken(result.token)
-        localStorage.setItem('fcmToken', result.token)
-      }
+        await saveFcmToken(result.token);
 
-      setNotificationStatus(result.message || `Pengingat berhasil diatur untuk jam ${reminderHour}.`)
+        localStorage.setItem('fcmToken', result.token);
+
+        setNotificationStatus(`Pengingat berhasil diatur untuk jam ${reminderHour}.`);
+      } else {
+        setNotificationError('Izin notifikasi ditolak atau gagal memuat Firebase.');
+
+        setReminderEnabled(false);
+        localStorage.setItem('pengingat_input_harian', 'false');
+      }
     } catch (error) {
-      setNotificationError(error.response?.data?.message || 'Pengingat gagal disimpan. Coba lagi.')
+      console.error('Error saat menyalakan notif:', error);
+      setNotificationError(error.response?.data?.message || 'Pengingat gagal disimpan. Coba lagi.');
+
+      // ROLLBACK: Balikan tombol ke OFF
+      setReminderEnabled(false);
+      localStorage.setItem('pengingat_input_harian', 'false');
     } finally {
-      setNotificationLoading(false)
+      setNotificationLoading(false);
     }
-  }
+  };
 
   const handleReminderTimeChange = async (value) => {
     setReminderHour(value)
@@ -706,18 +742,6 @@ export default function Akun() {
         </SectionCard>
 
         <SectionCard title='NOTIFIKASI' icon={LuBell}>
-          {notificationError && (
-            <div className='mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600'>
-              {notificationError}
-            </div>
-          )}
-
-          {notificationStatus && (
-            <div className='mt-4 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-xs text-teal-600'>
-              {notificationStatus}
-            </div>
-          )}
-
           <SettingsItem
             label='Pengingat input harian'
             sub='Aktifkan push notification untuk mengingatkan check-in harian'
@@ -739,11 +763,10 @@ export default function Akun() {
                 value={reminderHour}
                 disabled={!reminderEnabled || notificationLoading}
                 onChange={(e) => handleReminderTimeChange(e.target.value)}
-                className={`bg-slate-50 border border-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-400 transition-all ${
-                  reminderEnabled
-                    ? 'text-slate-600'
-                    : 'text-slate-300 cursor-not-allowed opacity-60'
-                }`}
+                className={`bg-slate-50 border border-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal-400 transition-all ${reminderEnabled
+                  ? 'text-slate-600'
+                  : 'text-slate-300 cursor-not-allowed opacity-60'
+                  }`}
               />
             }
           />
@@ -756,7 +779,7 @@ export default function Akun() {
         </SectionCard>
 
         <SectionCard title='TAMPILAN' icon={LuPalette}>
-          <SettingsItem label='Tema gelap' sub='Aktif secara default' right={<Toggle defaultOn />} />
+          <SettingsItem label='Tema gelap' sub='Aktif secara default' right={<Toggle />} />
 
           <SettingsItem
             label='Bahasa'
