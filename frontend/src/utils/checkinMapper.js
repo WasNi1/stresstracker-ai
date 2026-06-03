@@ -109,6 +109,28 @@ export function mapCheckinToLocalEntry(checkin) {
   }
 }
 
+function getEntryTimeValue(item) {
+  const raw = item?.updated_at || item?.created_at || item?.tanggal || ''
+  const time = new Date(raw).getTime()
+  return Number.isNaN(time) ? 0 : time
+}
+
 export function mapCheckinsToLocalEntries(checkins = []) {
-  return checkins.map(mapCheckinToLocalEntry).sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+  const mapped = checkins
+    .map(mapCheckinToLocalEntry)
+    .filter((item) => item?.tanggal)
+
+  // Backend bisa saja mengembalikan lebih dari satu check-in pada tanggal yang sama.
+  // Untuk tampilan riwayat, dashboard, dan statistik, gunakan 1 data terbaru per tanggal.
+  const uniqueByDate = new Map()
+
+  mapped.forEach((item) => {
+    const existing = uniqueByDate.get(item.tanggal)
+
+    if (!existing || getEntryTimeValue(item) >= getEntryTimeValue(existing)) {
+      uniqueByDate.set(item.tanggal, item)
+    }
+  })
+
+  return Array.from(uniqueByDate.values()).sort((a, b) => a.tanggal.localeCompare(b.tanggal))
 }
