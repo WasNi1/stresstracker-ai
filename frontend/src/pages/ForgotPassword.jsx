@@ -151,7 +151,7 @@ function ForgotPassword() {
 
             <p className='text-center text-sm text-slate-400 mt-6'>
               Sudah ingat password?{' '}
-              <Link to='/' className='text-teal-500 hover:text-teal-600 font-semibold'>
+              <Link to='/login' className='text-teal-500 hover:text-teal-600 font-semibold'>
                 Masuk sekarang
               </Link>
             </p>
