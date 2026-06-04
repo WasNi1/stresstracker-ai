@@ -31,11 +31,8 @@ function Topbar({ title }) {
         <p className='text-xs text-slate-400 mt-0.5 hidden sm:block'>{today}</p>
       </div>
 
-      <div className='flex items-center gap-2 md:gap-3'>
-
-        {/* Profile */}
+      {/* <div className='flex items-center gap-2 md:gap-3'>
         <div className='flex items-center gap-2 md:gap-2.5 bg-slate-50 border border-slate-100 rounded-2xl px-2 md:px-3 py-2 cursor-pointer hover:bg-teal-50 transition-colors'>
-          {/* Avatar: foto jika ada, inisial jika tidak */}
           <div className='w-6 h-6 md:w-7 md:h-7 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xs font-bold shrink-0'>
             {initial}
           </div>
@@ -44,7 +41,7 @@ function Topbar({ title }) {
           </span>
           <LuChevronDown size={14} className='text-slate-400 hidden sm:block' />
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

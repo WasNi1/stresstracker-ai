@@ -778,7 +778,7 @@ export default function Akun() {
           </div>
         </SectionCard>
 
-        <SectionCard title='TAMPILAN' icon={LuPalette}>
+        {/* <SectionCard title='TAMPILAN' icon={LuPalette}>
           <SettingsItem label='Tema gelap' sub='Aktif secara default' right={<Toggle />} />
 
           <SettingsItem
@@ -795,7 +795,7 @@ export default function Akun() {
               </select>
             }
           />
-        </SectionCard>
+        </SectionCard> */}
 
         <SectionCard title='KEAMANAN & AKUN' icon={LuLock}>
           <SettingsItem
