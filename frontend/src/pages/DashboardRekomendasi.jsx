@@ -234,6 +234,15 @@ function InputRingkasan({ entry }) {
   )
 }
 
+
+function getTodayKey() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 /* ─────────────────────────────────────────────
    Main Dashboard
 ───────────────────────────────────────────── */
@@ -241,7 +250,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const { user } = useApp()
   const [riwayat, setRiwayat] = useState([])
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayKey()
 
   useEffect(() => {
     const loadCheckins = async () => {
